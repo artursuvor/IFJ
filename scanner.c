@@ -11,7 +11,7 @@
 struct Token {
     int type;
     char value[];
-} token;
+} *tokenPtr;
 
 //fronta tokenů
 struct Fronta{
