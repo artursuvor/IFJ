@@ -6,157 +6,160 @@
 #include<stdio.h>
 #include<stdbool.h>
 #include<string.h>
-
-//struktura tokenu
-struct Token {
-    int type;
-    char value[];
-} *tokenPtr;
-
-//fronta tokenů
-struct Fronta{
-    token rada[];
-} fronta;
+#include <ctype.h>
+#include "basicScannerFunctions.c"
+#include "scanner.h"
+#include "dynArr.c"
 
 enum tokenType{keyword, id, string, operator, integer, ddouble, exponent};
 
-//globální proměnné
-bool konec = false;
-struct Fronta queue;
-
-//definice funkcí potřebných pro scanner
-bool isLetterUnder(char x);
-bool isLetterUnderNumber(char x);
-bool isKeyword(char x[]);
-bool isQuot(char x);
-bool isBackslash(char x);
-bool isNumber(char x);
-bool isDot(char x);
-bool isE(char x);
-bool isMinus(char x);
-bool isOperator(char x);
-bool isEqualSlash(char x);
-bool isWhitespace(char x);
-bool isEOF(char x);
-void Word(char x); //done
-void Number(char x); //done
-void String(char x); //done
-void Operator(char x); //done
-void makeToken(int type, char value[]);
-void addToQueue(struct Token send);
-void Double(char number[]); //done
-void Exponent(char number[]); //work in progress
-void Exponent2(char x, char number[]);
-char * esc1(); //done
-char * esc2(char x); //done
-char * esc3(char x, char y); //done
-void Operator2(char x, char y); //done
-
+int Error = 0;
 //tělo hlavní funkce Scanner
-int Scanner(){
+int main(){
+    dynArr *array;
+    arrayInit(array);
     char vstup = getchar();
-    konec = false;
+    bool konec = false;
     while(!konec){
         if(isLetterUnder(vstup))
-            Word(vstup);
+            vstup = Word(vstup, array);
         else
-            if(isNumber(vstup))
-                Number(vstup);
+            if(isdigit(vstup))
+                vstup = Number(vstup, array);
             else
                 if(isQuot(vstup))
-                    String(vstup);
+                    vstup = String(vstup, array);
                 else
                     if(isOperator(vstup))
-                        Operator(vstup);
+                        vstup = Operator(vstup, array);
                     else
                         if(isEOF(vstup))
                             konec = true;
                         else
-                            if(isWhitespace(vstup))
+                            if(isspace(vstup))
                                 vstup = getchar();
-                            else
+                            else{
+                                freeArray(array);
+                                Error++;
+                                if(Error>=1)
                                 return 1;
+                            }
     }
+    freeArray(array);
+    if (Error>=1)
+        return 1;
     return 0;
 }
 
 //Samotné funkce potřebné pro scanner
 
-void Word(char x){
-    char slovo[] = x;
+char Word(char x,dynArr *a){
+    struct Token * send;
+    char slovo[] = {x};
     x = getchar();
     while (isLetterUnderNumber(x)){
-        strncat(slovo, &x, 1);
+        strcat(slovo, &x);
         x = getchar();
     }
-    if(isKeyword(slovo))
-        struct token send = makeToken(keyword,slovo);
+    if(isKeyword(slovo)) {
+        send = makeToken(keyword, slovo);
+    }
     else
-        struct token send = makeToken(id,slovo);
-    addToQueue(send);
+        send = makeToken(id,slovo);
+    arrayInsert(a,send);
+    return x;
 }
 
-void Number(char x){
-    struct token send;
-    char number[] = x;
+char Number(char x,dynArr *a){
+    struct Token * send;
+    char number[] = {x};
     x = getchar();
-    while(isNumber(x)){
+    while(isdigit(x)){
         strncat(number, &x, 1);
         x = getchar();
     }
     if(isDot(x)) {
-        Double(number);
+        return Double(number, a);
     }
     else
         if (isE(x))
-            Exponent(number);
+            return Exponent(number,a);
         else{
             send = makeToken(integer, number);
-            addToQueue(send);
+            arrayInsert(a,send);
         }
-    return;
+    return x;
 }
 
-void Double(char  number[]){
+char Double(char *number, dynArr *a){
+    strcat(number, ".");
     char x = getchar();
-    while(isNumber(x)){
+    while(isdigit(x)){
         strncat(number, &x, 1);
         x = getchar();
     }
     if(isE(x))
-        Exponent(number);
+        return Exponent(number, a);
     else{
-        struct Token send = makeToken(ddouble, number);
-        addToQueue(send);
+        struct Token * send = makeToken(ddouble, number);
+        arrayInsert(a,send);
     }
-    return;
+    return x;
 }
 
-void Exponent(char number[]){
-    char x =
+char Exponent(char *number, dynArr *a){
+    strcat(number, "e");
+    char x = getchar();
+    if(isMinusPlus(x)){
+        strcat(number,&x);
+        return Exponent2(number, a);
+    }
+    else{
+        while (isdigit(x)){
+            strcat(number, &x);
+            x = getchar();
+        }
+    }
+    struct Token * send = makeToken(exponent, number);
+    arrayInsert(a, send);
+    return x;
 }
 
-void String(char x){
-    char slovo[];
+char Exponent2(char *number, dynArr *a){
+    char x = getchar();
+    while(isdigit(x)){
+        strcat(number,&x);
+        x = getchar();
+    }
+    struct Token * send = makeToken(exponent, number);
+    arrayInsert(a, send);
+    return x;
+}
+
+char String(char x, dynArr *a){
+    char *slovo;
     x = getchar();
     while (!isQuot(x)){
         if(isBackslash(x)){
-            strcat(slovo, &x,1);
-            char sekvence[3] = esc1();
-            strcat(slovo, &sekvence, 3);
+            strcat(slovo, &x);
+            char *sekvence = esc1();
+            strcat(slovo, sekvence);
         }
         else
-            strcat(slovo, &x, 1);
+            strcat(slovo, &x);
         x = getchar();
     }
-    struct Token send = makeToken(string,slovo);
-    addToQueue(send);
+    struct Token * send = makeToken(string,slovo);
+    arrayInsert(a, send);
+    return getchar();
 }
 
 char * esc1(){
     char x = getchar();
-    if(x>2)
-        //error
+    if(x>2) {
+        Error++;
+        return esc2(x);
+    }
     else
         return esc2(x);
 }
@@ -165,32 +168,43 @@ char * esc2(char x){
     char y = getchar();
     if(x>2)
         if(y>5)
-            //error
+            Error++;
     return esc3(x,y);
 }
 
 char * esc3(char x, char y){
     char z = getchar();
-    if(&x == "2")
+    if(x == '2')
         if(z>5)
-            //error
-    char sekvence[3] = {x,y,z};
+            Error++;
+    char *sekvence;
+    strcat(sekvence, &x);
+    strcat(sekvence, &y);
+    strcat(sekvence, &z);
     return sekvence;
 }
 
-void Operator(char x){
+char Operator(char x, dynArr *a){
     char operator1 = x;
     x = getchar();
-    if(isEqualSlash(x)){
-        Operator2(operator1,x);
+    if(isEqual(x) && operator1 == '=' || isSlash(x) && operator1 == '/'){
+        return Operator2(operator1,x,a);
     }
-    struct Token send = makeToken(operator, &operator1);
-    addToQueue(send);
+    struct Token * send = makeToken(operator, &operator1);
+    arrayInsert(a,send);
+    return x;
 }
 
-void Operator2(char x, char y){
+char Operator2(char x, char y, dynArr *a){
     char sekvence[2] = {x,y};
-    struct Token send = makeToken(operator, sekvence);
-    addToQueue(operator, send);
+    struct Token * send = makeToken(operator, sekvence);
+    arrayInsert(a, send);
+    return getchar();
 }
 
+struct Token * makeToken(int type, char *value){
+    struct Token *send = malloc(sizeof (struct Token));
+    send->type = type;
+    send->value = value;
+    return send;
+}

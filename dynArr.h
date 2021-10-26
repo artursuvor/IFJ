@@ -4,8 +4,9 @@
 *
 * Novák Matěj <xnovak2q@stud.fit.vutbr.cz>
 */
-
-#include "scanner.c"
+#ifndef IFJ_DYNARR_H
+#define IFJ_DYNARR_H
+#include "scanner.h"
 
 typedef struct
 {
@@ -22,3 +23,5 @@ void arrayInsert(dynArr *a, tokenPtr token);
 
 //uvolnění paměti po použití pole
 void freeArray(dynArr *a);
+
+#endif
