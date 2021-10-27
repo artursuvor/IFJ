@@ -66,7 +66,7 @@ char Word(char x,dynArr *a){
     }
     else
         send = makeToken(id,slovo);
-    arrayInsert(a,send);
+    arrayInsert(a, *send);
     return x;
 }
 
@@ -86,7 +86,7 @@ char Number(char x,dynArr *a){
             return Exponent(number,a);
         else{
             send = makeToken(integer, number);
-            arrayInsert(a,send);
+            arrayInsert(a, *send);
         }
     return x;
 }
@@ -102,7 +102,7 @@ char Double(char *number, dynArr *a){
         return Exponent(number, a);
     else{
         struct Token * send = makeToken(ddouble, number);
-        arrayInsert(a,send);
+        arrayInsert(a, *send);
     }
     return x;
 }
@@ -121,7 +121,7 @@ char Exponent(char *number, dynArr *a){
         }
     }
     struct Token * send = makeToken(exponent, number);
-    arrayInsert(a, send);
+    arrayInsert(a, *send);
     return x;
 }
 
@@ -132,7 +132,7 @@ char Exponent2(char *number, dynArr *a){
         x = getchar();
     }
     struct Token * send = makeToken(exponent, number);
-    arrayInsert(a, send);
+    arrayInsert(a, *send);
     return x;
 }
 
@@ -150,7 +150,7 @@ char String(char x, dynArr *a){
         x = getchar();
     }
     struct Token * send = makeToken(string,slovo);
-    arrayInsert(a, send);
+    arrayInsert(a, *send);
     return getchar();
 }
 
@@ -191,14 +191,14 @@ char Operator(char x, dynArr *a){
         return Operator2(operator1,x,a);
     }
     struct Token * send = makeToken(operator, &operator1);
-    arrayInsert(a,send);
+    arrayInsert(a, *send);
     return x;
 }
 
 char Operator2(char x, char y, dynArr *a){
     char sekvence[2] = {x,y};
     struct Token * send = makeToken(operator, sekvence);
-    arrayInsert(a, send);
+    arrayInsert(a, *send);
     return getchar();
 }
 

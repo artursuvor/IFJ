@@ -17,16 +17,16 @@ void arrayInit(dynArr *a){
     return;
 }
 
-void arrayInsert(dynArr *a, tokenPtr token){
+void arrayInsert(dynArr *a, struct Token token){
     if(a->used >= a->size){
         a->size *= 4;
         a->array = realloc(a->array, a->size * sizeof(struct Token));
     }
-    a->array[a->used++] = *token;
+    a->array[a->used++] = token;
     return;
 }
 
-void arrayFree(dynArr *a){
+void freeArray(dynArr *a){
     free(a->array);
     a->array = NULL;
     a->used = 0;

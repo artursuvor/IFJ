@@ -10,7 +10,7 @@
 
 typedef struct
 {
-    int *array;
+    struct Token *array;
     int used;
     int size;
 } dynArr;
@@ -19,7 +19,7 @@ typedef struct
 void arrayInit(dynArr *a);
 
 //vložení do pole
-void arrayInsert(dynArr *a, tokenPtr token);
+void arrayInsert(dynArr *a, struct Token token);
 
 //uvolnění paměti po použití pole
 void freeArray(dynArr *a);
