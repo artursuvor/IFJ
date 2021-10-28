@@ -19,7 +19,7 @@ void arrayInit(dynArr *a){
 
 void arrayInsert(dynArr *a, struct Token token){
     if(a->used >= a->size){
-        a->size *= 4;
+        a->size *= 2;
         a->array = realloc(a->array, a->size * sizeof(struct Token));
     }
     a->array[a->used++] = token;

@@ -45,6 +45,7 @@ int main(){
                                 return 1;
                             }
     }
+    debug(array);
     freeArray(array);
     if (Error>=1)
         return 1;
@@ -207,4 +208,11 @@ struct Token * makeToken(int type, char *value){
     send->type = type;
     send->value = value;
     return send;
+}
+//debug
+void debug(dynArr *a){
+    for (size_t i = 0; i < sizeof(a->array) - 1; i++)
+    {
+        printf("%s", a->array[i].value);
+    }
 }
