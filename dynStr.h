@@ -1,0 +1,30 @@
+//
+// Created by Novák on 01.11.2021.
+//
+
+#ifndef IFJ_DYNSTR_H
+#define IFJ_DYNSTR_H
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include "scanner.h"
+
+typedef struct {
+    char *str;
+    int len;
+} dynStr;
+
+//inicializace dynamického stringu
+//délka řetězce je nastavena na 1
+//a ukončující znak je vložen na konec stringu
+int initStr(dynStr *str);
+
+//uvolnění z paměti
+void freeStr(dynStr *str);
+
+//přidání nového řetězce do původního a
+//přepsání velikosti
+int addToStr(dynStr *str, char *strToAdd);
+
+#endif //IFJ_DYNSTR_H
