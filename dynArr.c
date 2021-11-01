@@ -7,22 +7,23 @@
 
 #include "dynArr.h"
 
-void arrayInit(dynArr *a){
-    a->array = malloc(sizeof(struct Token));
+int arrayInit(dynArr *a){
+    printf("Jsem arrayInit");
+    a->array = malloc(sizeof(token));
     if(!a->array){
-        return; //ošetření mallocu
+        return 1; //ošetření mallocu
     }
     a->size = 1;
     a->used = 0;
-    return;
+    return 0;
 }
 
-void arrayInsert(dynArr *a, struct Token token){
+void arrayInsert(dynArr *a, token tok){
     if(a->used >= a->size){
         a->size *= 2;
-        a->array = realloc(a->array, a->size * sizeof(struct Token));
+        a->array = realloc(a->array, a->size * sizeof(token));
     }
-    a->array[a->used++] = token;
+    a->array[a->used++] = tok;
     return;
 }
 

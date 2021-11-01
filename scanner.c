@@ -16,8 +16,11 @@ enum tokenType{keyword, id, string, operator, integer, ddouble, exponent};
 int Error = 0;
 //tělo hlavní funkce Scanner
 int main(){
-    dynArr *array;
-    arrayInit(array);
+    printf("Začínám main\n");
+    dynArr *array = malloc(sizeof(dynArr));
+    printf("Začínám Array\n");
+    int err = arrayInit(array);
+    printf("Initnul jsem array s errorem? %i\n", err);
     char vstup = getchar();
     bool konec = false;
     while(!konec){
@@ -55,7 +58,8 @@ int main(){
 //Samotné funkce potřebné pro scanner
 
 char Word(char x,dynArr *a){
-    struct Token * send;
+    printf("In Word\n");
+    token * send;
     char slovo[] = {x};
     x = getchar();
     while (isLetterUnderNumber(x)){
@@ -72,7 +76,8 @@ char Word(char x,dynArr *a){
 }
 
 char Number(char x,dynArr *a){
-    struct Token * send;
+    printf("In Number\n");
+    token * send;
     char number[] = {x};
     x = getchar();
     while(isdigit(x)){
@@ -93,6 +98,7 @@ char Number(char x,dynArr *a){
 }
 
 char Double(char *number, dynArr *a){
+    printf("In Double\n");
     strcat(number, ".");
     char x = getchar();
     while(isdigit(x)){
@@ -102,13 +108,14 @@ char Double(char *number, dynArr *a){
     if(isE(x))
         return Exponent(number, a);
     else{
-        struct Token * send = makeToken(ddouble, number);
+        token * send = makeToken(ddouble, number);
         arrayInsert(a, *send);
     }
     return x;
 }
 
 char Exponent(char *number, dynArr *a){
+    printf("In Exponent\n");
     strcat(number, "e");
     char x = getchar();
     if(isMinusPlus(x)){
@@ -121,23 +128,25 @@ char Exponent(char *number, dynArr *a){
             x = getchar();
         }
     }
-    struct Token * send = makeToken(exponent, number);
+    token * send = makeToken(exponent, number);
     arrayInsert(a, *send);
     return x;
 }
 
 char Exponent2(char *number, dynArr *a){
+    printf("In Exponent2\n");
     char x = getchar();
     while(isdigit(x)){
         strcat(number,&x);
         x = getchar();
     }
-    struct Token * send = makeToken(exponent, number);
+    token * send = makeToken(exponent, number);
     arrayInsert(a, *send);
     return x;
 }
 
 char String(char x, dynArr *a){
+    printf("In String\n");
     char *slovo;
     x = getchar();
     while (!isQuot(x)){
@@ -150,7 +159,7 @@ char String(char x, dynArr *a){
             strcat(slovo, &x);
         x = getchar();
     }
-    struct Token * send = makeToken(string,slovo);
+    token * send = makeToken(string,slovo);
     arrayInsert(a, *send);
     return getchar();
 }
@@ -186,27 +195,35 @@ char * esc3(char x, char y){
 }
 
 char Operator(char x, dynArr *a){
+    printf("In Operator\n");
     char operator1 = x;
     x = getchar();
     if(isEqual(x) && operator1 == '=' || isSlash(x) && operator1 == '/'){
         return Operator2(operator1,x,a);
     }
-    struct Token * send = makeToken(operator, &operator1);
+    token * send = makeToken(operator, &operator1);
     arrayInsert(a, *send);
     return x;
 }
 
 char Operator2(char x, char y, dynArr *a){
+    printf("In Operator2\n");
     char sekvence[2] = {x,y};
-    struct Token * send = makeToken(operator, sekvence);
+    token * send = makeToken(operator, sekvence);
     arrayInsert(a, *send);
     return getchar();
 }
 
-struct Token * makeToken(int type, char *value){
-    struct Token *send = malloc(sizeof (struct Token));
+token * makeToken(int type, char *value){
+    printf("Making token of type %i\n", type);
+    token *send = malloc(sizeof (token));
+    if(!send){
+        printf("Error\n");
+        return NULL;
+    }
     send->type = type;
     send->value = value;
+    printToken(*send);
     return send;
 }
 //debug
@@ -215,4 +232,7 @@ void debug(dynArr *a){
     {
         printf("%s", a->array[i].value);
     }
+}
+void printToken(token tok){
+    printf("Token: %i, value %s", tok.type, tok.value);
 }

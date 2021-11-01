@@ -10,16 +10,16 @@
 
 typedef struct
 {
-    struct Token *array;
+    token *array;
     int used;
     int size;
 } dynArr;
 
 //základní inicializace dynamického pole
-void arrayInit(dynArr *a);
+int arrayInit(dynArr *a);
 
 //vložení do pole
-void arrayInsert(dynArr *a, struct Token token);
+void arrayInsert(dynArr *a, token tok);
 
 //uvolnění paměti po použití pole
 void freeArray(dynArr *a);
