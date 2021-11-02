@@ -5,22 +5,24 @@
 #ifndef IFJ_SCANNER_H
 #define IFJ_SCANNER_H
 //struktura tokenu
+#include "dynStr.h"
 
 typedef struct{
     int type;
-    char *value;
+    dynStr *value;
 } token;
 
-#include "dynArr.h"
+#include "dynArr.c"
+#include "dynStr.c"
 
 char Word(char x, dynArr *a); //done
 char Number(char x, dynArr *a); //done
 char String(char x, dynArr *a); //done
-token * makeToken(int type, char *value); //done
-char Double(char *number, dynArr *a); //done
-char Exponent(char *number, dynArr *a); //done
-char Exponent2(char *number, dynArr *a); //done
-char * esc1(); //done
+token * makeToken(int type, dynStr *value); //done
+char Double(dynStr *number, dynArr *a); //done
+char Exponent(dynStr *number, dynArr *a); //done
+char Exponent2(dynStr *number, dynArr *a, char x); //done
+char * esc1(char x); //done
 char * esc2(char x); //done
 char * esc3(char x, char y); //done
 char Operator(char x, dynArr *a); //done

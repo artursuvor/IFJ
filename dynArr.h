@@ -6,7 +6,6 @@
 */
 #ifndef IFJ_DYNARR_H
 #define IFJ_DYNARR_H
-#include "scanner.h"
 
 typedef struct
 {
@@ -14,6 +13,9 @@ typedef struct
     int used;
     int size;
 } dynArr;
+
+#include "scanner.h"
+
 
 //základní inicializace dynamického pole
 int arrayInit(dynArr *a);

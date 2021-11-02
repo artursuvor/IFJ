@@ -5,15 +5,17 @@
 #ifndef IFJ_DYNSTR_H
 #define IFJ_DYNSTR_H
 
+typedef struct {
+    char *str;
+    int len;
+} dynStr;
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "scanner.h"
 
-typedef struct {
-    char *str;
-    int len;
-} dynStr;
+
 
 //inicializace dynamického stringu
 //délka řetězce je nastavena na 1

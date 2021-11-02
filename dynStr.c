@@ -5,6 +5,8 @@
 #include "dynStr.h"
 
 int initStr(dynStr *str){
+    if(!str)
+        return 1;
     str->len = 1;
     str->str = (char *) malloc(sizeof (char) * (str->len+1));
     if (!str->str){

@@ -9,19 +9,18 @@
 #include <ctype.h>
 #include "basicScannerFunctions.c"
 #include "scanner.h"
-#include "dynArr.c"
 
 enum tokenType{keyword, id, string, operator, integer, ddouble, exponent};
 
 int Error = 0;
 //tělo hlavní funkce Scanner
 int main(){
-    printf("Začínám main\n");
     dynArr *array = malloc(sizeof(dynArr));
-    printf("Začínám Array\n");
     int err = arrayInit(array);
-    printf("Initnul jsem array s errorem? %i\n", err);
     char vstup = getchar();
+    char tmp1;
+    char tmp2;
+    char tmp3;
     bool konec = false;
     while(!konec){
         if(isLetterUnder(vstup))
@@ -33,20 +32,40 @@ int main(){
                 if(isQuot(vstup))
                     vstup = String(vstup, array);
                 else
-                    if(isOperator(vstup))
-                        vstup = Operator(vstup, array);
-                    else
-                        if(isEOF(vstup))
-                            konec = true;
-                        else
-                            if(isspace(vstup))
-                                vstup = getchar();
-                            else{
-                                freeArray(array);
-                                Error++;
-                                if(Error>=1)
-                                return 1;
+                    if(isMinus(vstup)){ //přeskakování komentářů
+                        tmp1 = getchar();
+                            if(isMinus(tmp1)) {
+                                tmp2 = getchar();
+                                if (isOpenBracket(tmp2)) {
+                                    tmp3 = getchar();
+                                    if (isOpenBracket(tmp3)){
+                                        skipBlockComment();
+                                    }
+                                    else{
+                                        skipLineComment();
+                                    }
+                                }
+                                else{
+                                    skipLineComment();
+                                }
                             }
+                            else
+                                vstup = tmp1;
+                    }
+                    else {
+                        if (isOperator(vstup))
+                            vstup = Operator(vstup, array);
+                        else if (isEOF(vstup))
+                            konec = true;
+                        else if (isspace(vstup))
+                            vstup = getchar();
+                        else {
+                            freeArray(array);
+                            Error++;
+                            if (Error >= 1)
+                                return 1;
+                        }
+                    }
     }
     debug(array);
     freeArray(array);
@@ -58,12 +77,13 @@ int main(){
 //Samotné funkce potřebné pro scanner
 
 char Word(char x,dynArr *a){
-    printf("In Word\n");
     token * send;
-    char slovo[] = {x};
+    dynStr *slovo = malloc(sizeof (dynStr));
+    int i = initStr(slovo);
+    addToStr(slovo, &x);
     x = getchar();
     while (isLetterUnderNumber(x)){
-        strcat(slovo, &x);
+        addToStr(slovo,&x);
         x = getchar();
     }
     if(isKeyword(slovo)) {
@@ -72,16 +92,18 @@ char Word(char x,dynArr *a){
     else
         send = makeToken(id,slovo);
     arrayInsert(a, *send);
+    freeStr(slovo);
     return x;
 }
 
 char Number(char x,dynArr *a){
-    printf("In Number\n");
     token * send;
-    char number[] = {x};
+    dynStr *number = malloc(sizeof (dynStr));
+    int i = initStr(number);
+    addToStr(number, &x);
     x = getchar();
     while(isdigit(x)){
-        strncat(number, &x, 1);
+        addToStr(number,&x);
         x = getchar();
     }
     if(isDot(x)) {
@@ -94,15 +116,15 @@ char Number(char x,dynArr *a){
             send = makeToken(integer, number);
             arrayInsert(a, *send);
         }
+    freeStr(number);
     return x;
 }
 
-char Double(char *number, dynArr *a){
-    printf("In Double\n");
-    strcat(number, ".");
+char Double(dynStr *number, dynArr *a){
+    addToStr(number, ".");
     char x = getchar();
     while(isdigit(x)){
-        strncat(number, &x, 1);
+        addToStr(number,&x);
         x = getchar();
     }
     if(isE(x))
@@ -111,64 +133,73 @@ char Double(char *number, dynArr *a){
         token * send = makeToken(ddouble, number);
         arrayInsert(a, *send);
     }
+    freeStr(number);
     return x;
 }
 
-char Exponent(char *number, dynArr *a){
-    printf("In Exponent\n");
-    strcat(number, "e");
+char Exponent(dynStr *number, dynArr *a){
+    addToStr(number,"e");
     char x = getchar();
     if(isMinusPlus(x)){
-        strcat(number,&x);
-        return Exponent2(number, a);
+        addToStr(number,&x);
+        return Exponent2(number, a, x);
     }
     else{
         while (isdigit(x)){
-            strcat(number, &x);
+            addToStr(number,&x);
             x = getchar();
         }
     }
     token * send = makeToken(exponent, number);
     arrayInsert(a, *send);
+    freeStr(number);
     return x;
 }
 
-char Exponent2(char *number, dynArr *a){
-    printf("In Exponent2\n");
-    char x = getchar();
+char Exponent2(dynStr *number, dynArr *a,char x){
+    addToStr(number,&x);
+    x = getchar();
     while(isdigit(x)){
-        strcat(number,&x);
+        addToStr(number,&x);
         x = getchar();
     }
     token * send = makeToken(exponent, number);
     arrayInsert(a, *send);
+    freeStr(number);
     return x;
 }
 
 char String(char x, dynArr *a){
-    printf("In String\n");
-    char *slovo;
+    dynStr *slovo = malloc(sizeof (dynStr));
+    int i = initStr(slovo);
     x = getchar();
     while (!isQuot(x)){
         if(isBackslash(x)){
-            strcat(slovo, &x);
-            char *sekvence = esc1();
-            strcat(slovo, sekvence);
+            addToStr(slovo,&x);
+            char *sekv = esc1(x);
+            addToStr(slovo, sekv);
         }
         else
-            strcat(slovo, &x);
+            addToStr(slovo,&x);
         x = getchar();
     }
     token * send = makeToken(string,slovo);
     arrayInsert(a, *send);
+    freeStr(slovo);
     return getchar();
 }
 
-char * esc1(){
-    char x = getchar();
-    if(x>2) {
+char * esc1(char x){
+    x = getchar();
+    char *xptr;
+    if(x == 'n' || x == 't'){
+        xptr = &x;
+        return xptr;
+    }
+    if(x>'2' && x<'9') {
         Error++;
-        return esc2(x);
+        xptr = &x;
+        return xptr;
     }
     else
         return esc2(x);
@@ -176,46 +207,53 @@ char * esc1(){
 
 char * esc2(char x){
     char y = getchar();
-    if(x>2)
-        if(y>5)
+    if(x == '2') {
+        if (y > 5) {
             Error++;
+            char *xptr[2] = {&x, &y};
+            return *xptr;
+        }
+    }
     return esc3(x,y);
 }
 
 char * esc3(char x, char y){
     char z = getchar();
-    if(x == '2')
+    if(x == '2' && y == '5')
         if(z>5)
             Error++;
-    char *sekvence;
-    strcat(sekvence, &x);
-    strcat(sekvence, &y);
-    strcat(sekvence, &z);
-    return sekvence;
+    char *xptr[3] = {&x,&y,&z};
+    return *xptr;
 }
 
 char Operator(char x, dynArr *a){
-    printf("In Operator\n");
-    char operator1 = x;
+    char tmp = x;
     x = getchar();
-    if(isEqual(x) && operator1 == '=' || isSlash(x) && operator1 == '/'){
-        return Operator2(operator1,x,a);
+    if(isEqual(x) && tmp == '=' || isSlash(x) && tmp == '/'){
+        return Operator2(tmp,x,a);
     }
-    token * send = makeToken(operator, &operator1);
+    dynStr *operator1 = malloc(sizeof (dynStr));
+    initStr(operator1);
+    addToStr(operator1, &tmp);
+    token * send = makeToken(operator, operator1);
     arrayInsert(a, *send);
+    freeStr(operator1);
     return x;
 }
 
 char Operator2(char x, char y, dynArr *a){
-    printf("In Operator2\n");
-    char sekvence[2] = {x,y};
+    printf("calling operator2\n");
+    dynStr *sekvence = malloc(sizeof (dynStr));
+    initStr(sekvence);
+    addToStr(sekvence, &x);
+    addToStr(sekvence, &y);
     token * send = makeToken(operator, sekvence);
     arrayInsert(a, *send);
+    freeStr(sekvence);
     return getchar();
 }
 
-token * makeToken(int type, char *value){
-    printf("Making token of type %i\n", type);
+token * makeToken(int type, dynStr *value){
     token *send = malloc(sizeof (token));
     if(!send){
         printf("Error\n");
@@ -230,9 +268,10 @@ token * makeToken(int type, char *value){
 void debug(dynArr *a){
     for (size_t i = 0; i < sizeof(a->array) - 1; i++)
     {
-        printf("%s", a->array[i].value);
+        printf("Token type: %i\t", a->array->type);
+        printf("Token value: %s\n", a->array[i].value->str);
     }
 }
 void printToken(token tok){
-    printf("Token: %i, value %s", tok.type, tok.value);
+    printf("Token: %i, value %s\n", tok.type, tok.value->str);
 }

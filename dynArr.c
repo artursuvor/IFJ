@@ -8,7 +8,6 @@
 #include "dynArr.h"
 
 int arrayInit(dynArr *a){
-    printf("Jsem arrayInit");
     a->array = malloc(sizeof(token));
     if(!a->array){
         return 1; //ošetření mallocu
