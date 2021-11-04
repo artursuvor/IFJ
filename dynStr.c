@@ -4,13 +4,16 @@
 
 #include "dynStr.h"
 
+#define DYNSTR_LEN 8
+
 void initStr(dynStr *str){
-    str->len = 1;
-    str->str = (char *) malloc(sizeof (char) * (str->len+1));
-    if (!str->str){
+    str->str = (char *) malloc(DYNSTR_LEN);
+    if (!str->str) {
         exit(99);
     }
-    str->str[str->len] = '\0';
+    str->all_len = DYNSTR_LEN;
+    str->len = 0;
+    str->str[len] = '\0';
     return;
 }
 
@@ -19,14 +22,16 @@ void freeStr(dynStr *str){
     str->len = 0;
 }
 
-void addToStr(dynStr *str, char *strToAdd){
-    int strToAddSize = strlen(strToAdd);
-    int size = str->len + strToAddSize;
-    str->str = realloc(str->str, sizeof(char) * (size+1));
-    if (!str->str){
-        exit(99);
+void addToStr(dynStr *str, char c){
+    if ((str->len + 1) >= (str->all_len)){
+        int size = str->len + DYNSTR_LEN;
+        str->str = (char *)realloc(str->str, size);
+        if (!str->str) {
+            exit(99);
+        }
+        str->all_len = size;
     }
-    str->len = size;
-    strcat(str->str, strToAdd);
+    str->str[str->len++] = c;
+    str->str[str->len] = '\0';
     return;
 }

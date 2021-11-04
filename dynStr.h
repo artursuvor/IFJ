@@ -8,6 +8,7 @@
 typedef struct {
     char *str;
     int len;
+    int all_len;
 } dynStr;
 
 #include <stdlib.h>
