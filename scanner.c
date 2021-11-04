@@ -79,7 +79,7 @@ int main(){
 char Word(char x,dynArr *a){
     token * send;
     dynStr *slovo = malloc(sizeof (dynStr));
-    int i = initStr(slovo);
+    initStr(slovo);
     addToStr(slovo, &x);
     x = getchar();
     while (isLetterUnderNumber(x)){
@@ -99,7 +99,7 @@ char Word(char x,dynArr *a){
 char Number(char x,dynArr *a){
     token * send;
     dynStr *number = malloc(sizeof (dynStr));
-    int i = initStr(number);
+    initStr(number);
     addToStr(number, &x);
     x = getchar();
     while(isdigit(x)){
@@ -171,7 +171,7 @@ char Exponent2(dynStr *number, dynArr *a,char x){
 
 char String(char x, dynArr *a){
     dynStr *slovo = malloc(sizeof (dynStr));
-    int i = initStr(slovo);
+    initStr(slovo);
     x = getchar();
     while (!isQuot(x)){
         if(isBackslash(x)){

@@ -20,13 +20,13 @@ typedef struct {
 //inicializace dynamického stringu
 //délka řetězce je nastavena na 1
 //a ukončující znak je vložen na konec stringu
-int initStr(dynStr *str);
+void initStr(dynStr *str);
 
 //uvolnění z paměti
 void freeStr(dynStr *str);
 
 //přidání nového řetězce do původního a
 //přepsání velikosti
-int addToStr(dynStr *str, char *strToAdd);
+void addToStr(dynStr *str, char *strToAdd);
 
 #endif //IFJ_DYNSTR_H
