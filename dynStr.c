@@ -4,16 +4,16 @@
 
 #include "dynStr.h"
 
-int initStr(dynStr *str){
+void initStr(dynStr *str){
     if(!str)
         return 1;
     str->len = 1;
     str->str = (char *) malloc(sizeof (char) * (str->len+1));
     if (!str->str){
-        return 1;
+        exit(99);
     }
     str->str[str->len] = '\0';
-    return 0;
+    return;
 }
 
 void freeStr(dynStr *str){
@@ -21,14 +21,14 @@ void freeStr(dynStr *str){
     str->len = 0;
 }
 
-int addToStr(dynStr *str, char *strToAdd){
+void addToStr(dynStr *str, char *strToAdd){
     int strToAddSize = strlen(strToAdd);
     int size = str->len + strToAddSize;
     str->str = realloc(str->str, sizeof(char) * (size+1));
     if (!str->str){
-        return 1;
+        exit(99);
     }
     str->len = size;
     strcat(str->str, strToAdd);
-    return 0;
+    return;
 }
