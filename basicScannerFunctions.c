@@ -22,7 +22,7 @@ bool isLetterUnderNumber(char x){
 }
 bool isKeyword(dynStr *x){
     for(int i = 0; i < 15; i++){
-        if(strcmp(x->str, keywords[i]))
+        if(!strcmp(x->str, keywords[i]))
             return true;
     }
     return false;

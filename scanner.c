@@ -32,42 +32,42 @@ int main(){
                 if(isQuot(vstup))
                     vstup = String(vstup, array);
                 else
-                    if(isMinus(vstup)){ //přeskakování komentářů
+                if (isOperator(vstup)) {
+                    if(isMinus(vstup)){
                         tmp1 = getchar();
-                            if(isMinus(tmp1)) {
-                                tmp2 = getchar();
-                                if (isOpenBracket(tmp2)) {
-                                    tmp3 = getchar();
-                                    if (isOpenBracket(tmp3)){
-                                        skipBlockComment();
-                                    }
-                                    else{
-                                        skipLineComment();
-                                    }
+                        if(isMinus(tmp1)){
+                            tmp2 = getchar();
+                            if (isOpenBracket(tmp2)) {
+                                tmp3 = getchar();
+                                if (isOpenBracket(tmp3)){
+                                    skipBlockComment();
                                 }
                                 else{
                                     skipLineComment();
                                 }
                             }
-                            else
-                                vstup = tmp1;
-                    }
-                    else {
-                        if (isOperator(vstup))
-                            vstup = Operator(vstup, array);
-                        else if (isEOF(vstup))
-                            konec = true;
-                        else if (isspace(vstup))
+                            else{
+                                skipLineComment();
+                            }
                             vstup = getchar();
-                        else {
-                            freeArray(array);
-                            Error++;
-                            if (Error >= 1)
-                                return 1;
                         }
+                        else
+                            ungetc(tmp1, stdin);
                     }
+                    if (isOperator(vstup))
+                        vstup = Operator(vstup, array);
+                }
+                else if (isEOF(vstup))
+                    konec = true;
+                else if (isspace(vstup))
+                    vstup = getchar();
+                else {
+                    freeArray(array);
+                    Error++;
+                    if (Error >= 1)
+                        return 1;
+                }
     }
-    debug(array);
     freeArray(array);
     if (Error>=1)
         return 1;
@@ -80,10 +80,10 @@ char Word(char x,dynArr *a){
     token * send;
     dynStr *slovo = malloc(sizeof (dynStr));
     initStr(slovo);
-    addToStr(slovo, &x);
+    addToStr(slovo, x);
     x = getchar();
     while (isLetterUnderNumber(x)){
-        addToStr(slovo,&x);
+        addToStr(slovo,x);
         x = getchar();
     }
     if(isKeyword(slovo)) {
@@ -100,10 +100,10 @@ char Number(char x,dynArr *a){
     token * send;
     dynStr *number = malloc(sizeof (dynStr));
     initStr(number);
-    addToStr(number, &x);
+    addToStr(number, x);
     x = getchar();
     while(isdigit(x)){
-        addToStr(number,&x);
+        addToStr(number,x);
         x = getchar();
     }
     if(isDot(x)) {
@@ -121,10 +121,10 @@ char Number(char x,dynArr *a){
 }
 
 char Double(dynStr *number, dynArr *a){
-    addToStr(number, ".");
+    addToStr(number, '.');
     char x = getchar();
     while(isdigit(x)){
-        addToStr(number,&x);
+        addToStr(number,x);
         x = getchar();
     }
     if(isE(x))
@@ -138,15 +138,15 @@ char Double(dynStr *number, dynArr *a){
 }
 
 char Exponent(dynStr *number, dynArr *a){
-    addToStr(number,"e");
+    addToStr(number,'e');
     char x = getchar();
     if(isMinusPlus(x)){
-        addToStr(number,&x);
+        addToStr(number,x);
         return Exponent2(number, a, x);
     }
     else{
         while (isdigit(x)){
-            addToStr(number,&x);
+            addToStr(number,x);
             x = getchar();
         }
     }
@@ -157,10 +157,10 @@ char Exponent(dynStr *number, dynArr *a){
 }
 
 char Exponent2(dynStr *number, dynArr *a,char x){
-    addToStr(number,&x);
+    addToStr(number,x);
     x = getchar();
     while(isdigit(x)){
-        addToStr(number,&x);
+        addToStr(number,x);
         x = getchar();
     }
     token * send = makeToken(exponent, number);
@@ -175,12 +175,14 @@ char String(char x, dynArr *a){
     x = getchar();
     while (!isQuot(x)){
         if(isBackslash(x)){
-            addToStr(slovo,&x);
+            addToStr(slovo,x);
             char *sekv = esc1(x);
-            addToStr(slovo, sekv);
+            for(int i = 0; isalnum(sekv[i]);i++) {
+                addToStr(slovo, sekv[i]);
+            }
         }
         else
-            addToStr(slovo,&x);
+            addToStr(slovo,x);
         x = getchar();
     }
     token * send = makeToken(string,slovo);
@@ -234,7 +236,7 @@ char Operator(char x, dynArr *a){
     }
     dynStr *operator1 = malloc(sizeof (dynStr));
     initStr(operator1);
-    addToStr(operator1, &tmp);
+    addToStr(operator1, tmp);
     token * send = makeToken(operator, operator1);
     arrayInsert(a, *send);
     freeStr(operator1);
@@ -242,11 +244,10 @@ char Operator(char x, dynArr *a){
 }
 
 char Operator2(char x, char y, dynArr *a){
-    printf("calling operator2\n");
     dynStr *sekvence = malloc(sizeof (dynStr));
     initStr(sekvence);
-    addToStr(sekvence, &x);
-    addToStr(sekvence, &y);
+    addToStr(sekvence, x);
+    addToStr(sekvence, y);
     token * send = makeToken(operator, sekvence);
     arrayInsert(a, *send);
     freeStr(sekvence);

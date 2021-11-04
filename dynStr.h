@@ -28,6 +28,6 @@ void freeStr(dynStr *str);
 
 //přidání nového řetězce do původního a
 //přepsání velikosti
-void addToStr(dynStr *str, char *strToAdd);
+void addToStr(dynStr *str, char c);
 
 #endif //IFJ_DYNSTR_H

@@ -13,7 +13,7 @@ void initStr(dynStr *str){
     }
     str->all_len = DYNSTR_LEN;
     str->len = 0;
-    str->str[len] = '\0';
+    str->str[str->len] = '\0';
     return;
 }
 
