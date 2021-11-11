@@ -10,7 +10,22 @@
 #include "basicScannerFunctions.c"
 #include "scanner.h"
 
-enum tokenType{keyword, id, string, operator, integer, ddouble, exponent};
+// Stavy automatu
+
+#define START_STATE 100
+#define END_STATE 199
+#define STATE_STRING 110
+#define STATE_WORD 120
+#define STATE_WORD_DONE 125
+#define STATE_NUMBER 140
+#define STATE_DOUBLE 150
+#define STATE_IS_E 155
+#define STATE_IS_OPERATOR 160
+#define STATE_EOL 198
+
+
+
+enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket};
 
 int Error = 0;
 //tělo hlavní funkce Scanner
