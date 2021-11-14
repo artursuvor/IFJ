@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include "./list.h"
 
-list_t *init_list()
+list *init_list()
 {
-	list_t *new = my_malloc(sizeof(list_t));
-	new->head = NULL;
-	new->tail = NULL;
+	list *new = my_malloc(sizeof(list));
+	new->first = NULL;
+	new->last = NULL;
 	return new;
 
 }
@@ -21,15 +21,15 @@ void node_delete(list_node_t *node)
 
 
 
-bool list_is_empty(list_t *list)
+bool list_is_empty(list *list)
 {
-	return list->head ? true : false;
+	return list->first ? true : false;
 }
 
-void free_list(list_t *list)
+void free_list(list *list)
 {	
 	list_node_t *remove = NULL;
-	list_node_t *tmp = list->head;
+	list_node_t *tmp = list->first;
 	while (tmp)
 	{
 		remove = tmp;
@@ -50,170 +50,170 @@ list_node_t *list_create_node(token t)
 }
 
 
-void list_delete_first(list_t *list)
+void list_delete_first(list *list)
 { 
-	if (!list->head) return;
+	if (!list->first) return;
 
-	if (!list->head->next)
+	if (!list->first->next)
 	{
-		list->head = NULL;
-		list->tail = NULL;
+		list->first = NULL;
+		list->last = NULL;
 	}
 	else
 	{
-		list_node_t *tmp = list->head->next;
+		list_node_t *tmp = list->first->next;
 		tmp->previous = NULL;
-		list->head = tmp;
+		list->first = tmp;
 	}
 
 }
 
-void list_delete_active(list_t *list)
+void list_delete_active(list *list)
 {
-	if (list->active == list->head && list->active == list->tail)
+	if (list->act == list->first && list->act == list->last)
 	{
-		list->head = NULL;
-		list->head = NULL;
-		list->tail = NULL;
+		list->first = NULL;
+		list->first = NULL;
+		list->last = NULL;
 	}
-	else if (list->active == list->head)
+	else if (list->act == list->first)
 	{
-		list->active = list->head->next;
-		list->active->previous = NULL;
-		list->head = list->active;
+		list->act = list->first->next;
+		list->act->previous = NULL;
+		list->first = list->act;
 	}
-	else if (list->active == list->tail)
+	else if (list->act == list->last)
 	{
-		list->active = list->tail->previous;
-		list->active->next = NULL;
-		list->tail = list->active;
+		list->act = list->last->previous;
+		list->act->next = NULL;
+		list->last = list->act;
 	}
 	else
 	{
-		list_node_t *tmp = list->active;
-		tmp->previous = list->active;
-                tmp->next->previous = list->active;
+		list_node_t *tmp = list->act;
+		tmp->previous = list->act;
+                tmp->next->previous = list->act;
 		tmp->previous->next = tmp->next;
 	}
 }
 
-void list_delete_last(list_t *list)
+void list_delete_last(list *list)
 {
-	if (!list->head) return;
+	if (!list->first) return;
 	
-	if (!list->tail->previous)
+	if (!list->last->previous)
 	{
-		list->head = NULL;
-		list->tail = NULL;
+		list->first = NULL;
+		list->last = NULL;
 	}
 	else
 	{
-		list_node_t *tmp = list->tail->previous;
+		list_node_t *tmp = list->last->previous;
 		tmp->next = NULL;
-		list->tail = tmp;
+		list->last = tmp;
 	}
 }
 
 
-void list_insert_first(list_t *list, token t)
+void list_insert_first(list *list, token t)
 {
 	list_node_t *node = list_create_node(t);
-	if (list->head == NULL)
+	if (list->first == NULL)
 	{
-		list->head = node;
-		list->tail = node;
+		list->first = node;
+		list->last = node;
 	}
 	else
 	{
-		list->head->previous = node;
-		node->next = list->head;
-		list->head = node;
+		list->first->previous = node;
+		node->next = list->first;
+		list->first = node;
 	}
 }
 
 
-void list_insert_last(list_t *list, token t)
+void list_insert_last(list *list, token t)
 {
 	list_node_t *node = list_create_node(t);
-	if (list->head == NULL)
+	if (list->first == NULL)
         {
-                list->head = node;
-                list->tail = node;
+                list->first = node;
+                list->last = node;
         }
 	else
 	{
-		list->tail->next = node;
-		node->previous = list->tail;
-		list->tail = node;
+		list->last->next = node;
+		node->previous = list->last;
+		list->last = node;
 	}
 }
 
-void list_insert_active(list_t *list, token t)
+void list_insert_active(list *list, token t)
 {
 	list_node_t *node = list_create_node(t);
 	node->token = t;
-	node->previous = list->active;
+	node->previous = list->act;
 
-	if (list->active == list->tail)
+	if (list->act == list->last)
 	{
-		list->tail = node;
+		list->last = node;
 	}
 	else
 	{
-		node->next = list->active->next;
+		node->next = list->act->next;
 		node->next->previous = node;
 	}
-	list->active->next = node;
+	list->act->next = node;
 }
 
-bool list_is_active(list_t *list)
+bool list_is_active(list *list)
 {
-	return list->active ? true : false;
+	return list->act ? true : false;
 }
 
-void list_activate_first(list_t *list)
+void list_activate_first(list *list)
 {
-	list->active = list->head;
+	list->act = list->first;
 }
 
-void list_activate_last(list_t *list)
+void list_activate_last(list *list)
 {
-	list->active = list->tail;
+	list->act = list->last;
 }
 
-token list_get_active(list_t *list)
+token list_get_active(list *list)
 {
-	return list->active->token;
+	return list->act->token;
 }
 
-token list_get_after_active(list_t *list)
+token list_get_after_active(list *list)
 {
-	return list->active->next->token;
+	return list->act->next->token;
 }
 
-token list_get_last(list_t *list)
+token list_get_last(list *list)
 {
-	return list->tail->token;
+	return list->last->token;
 }
 
-bool list_active_previous(list_t *list)
+bool list_active_previous(list *list)
 {
-        if ((list->active = list->active->previous) != NULL)
+        if ((list->act = list->act->previous) != NULL)
                 return true;
         return false;
 
 }
 
-bool list_active_next(list_t *list)
+bool list_active_next(list *list)
 {
-        if ((list->active = list->active->next) != NULL)
+        if ((list->act = list->act->next) != NULL)
                 return true;
         return false;
 }
 
-void list_delete_more(list_t *list, unsigned n)
+void list_delete_more(list *list, unsigned n)
 {
-        list_node_t *tmp = list->active->next;
+        list_node_t *tmp = list->act->next;
         list_node_t *remove;
         while (tmp && n > 0)
         {
@@ -225,12 +225,12 @@ void list_delete_more(list_t *list, unsigned n)
         }
         if (tmp)
         {
-                tmp->previous = list->active;
-                list->active->next = tmp;
+                tmp->previous = list->act;
+                list->act->next = tmp;
         }
         else
         {
-                list->tail = list->active;
-                list->active->next = NULL;
+                list->last = list->act;
+                list->act->next = NULL;
         }
 }
