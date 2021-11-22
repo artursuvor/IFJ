@@ -1,0 +1,42 @@
+#include "./symtable.h"
+
+symtable_node_t *symtable_init()
+{
+	return NULL;
+}	
+
+bool symtable_search(symtable_node_t *root_pointer, char *key, symtable_value_t content)
+{		
+	if(root_pointer == NULL)
+		return false;
+	if(strcmp(root_pointer->key, key) == 0)
+	{
+		*content = *root_pointer->value;
+		return true;
+	}
+    
+    if(strcmp(key, root_pointer->key) < 0)
+		return symtable_search(root_pointer->lptr,key,content);
+	else
+		return symtable_search(root_pointer->rptr,key,content);
+} 
+
+
+void symtable_insert(symtable_node_t **root_pointer, char *key, symtable_value_t content)
+{		
+	if (*root_pointer == NULL)
+	{
+		(*root_pointer) = my_malloc(sizeof(symtable_node_t));		
+		(*root_pointer)->key = my_malloc(strlen(key) * sizeof(char) + 1);
+		strcpy((*root_pointer)->key,key);
+		(*root_pointer)->value=content;
+		(*root_pointer)->lptr = NULL;
+		(*root_pointer)->rptr = NULL;
+	}
+	else if(strcmp((*root_pointer)->key, key) == 0)
+		(*root_pointer)->value=content;
+	else if(strcmp(key, (*root_pointer)->key) < 0)
+		symtable_insert(&(*root_pointer)->lptr,key,content);
+	else 
+		symtable_insert(&(*root_pointer)->rptr,key,content);
+}
