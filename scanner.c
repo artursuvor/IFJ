@@ -25,13 +25,11 @@
 
 
 
-enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_EOF, t_EOL, equal, add, sub, mul, div, new_line};
+enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_END, t_EOF, t_EOL, equal, add, sub, mul, div, new_line};
 
 int Error = 0;
 //tělo hlavní funkce Scanner
-int main(){
-    dynArr *array = malloc(sizeof(dynArr));
-    int err = arrayInit(array);
+int scanner(dynArr *array){
     char vstup = getchar();
     char tmp1;
     char tmp2;
@@ -83,7 +81,9 @@ int main(){
                         return 1;
                 }
     }
-    freeArray(array);
+    token *end_of_array = makeToken(t_END, '\0');
+    int len = strlen(array->array);
+    array->array[len] = *end_of_array;
     if (Error>=1)
         return 1;
     return 0;

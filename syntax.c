@@ -15,20 +15,18 @@
 #define END_ELSE 73
 
 //globálníé proměnná pro funkce get_next_token()
-int next_token = 0;
+int next_token = -1;
 
 //funkce pro získání dalšího tokenu z dynArr
 token get_next_token(dynArr *a){
-	if (len(a->array) > next_token){
-		return a->array[next_token];
-		next_token++;
-	}
+	next_token++;
+	return a->array[next_token];
 };
 
 symtable_node_t *table;
 list *main_list;
 
-void parser_start() {
+void parser_start(dynArr *a) {
 
 	//  Inicializace
 
