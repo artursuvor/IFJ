@@ -15,13 +15,8 @@
 #define END_ELSE 73
 
 
-// NEFUNKCNI!!! Potrebuji spravne zarazene definice stavu v teto branchi pls
-
 symtable_node_t *table;
 list *main_list;
-
-
-
 
 void parser_start() {
 
@@ -29,13 +24,13 @@ void parser_start() {
 
 	token t;
 	table = symtable_init();
-	main_list = init_list();
+	list main_list = init_list();
+	list function_list = init_list();
 
 	while ((t.type) != t_EOF) {
 		switch (t.type)
 		{
-			// case keyword:
-
+			
 			case id:
 				check_id (t);
 				break;
@@ -52,16 +47,16 @@ void parser_start() {
 				else
 					printf(stderr,"unexpected token after item");
 				break;
-			// case exponent: 
-			// case operator:
-			// case left_bracket:
-			// case right_bracket:
+			case t_EOL:
+				continue;
 			default:
 				printf(stderr, "Neznamy token");
 				break;
 		}
 	}
 
+	semantic_start(function_list, table);
+	return main_list;
 }
 
 /*
@@ -112,7 +107,7 @@ void check_while()
 	token t;
 	check_bool(WITHOUT_BRACKET, END_DO);//checkuje i EOL
 
-	inside_commands(END_END);
+	process_command(END_END);
 	//EOL
 	t = get_next_token();
 	list_insert_last(main_list, t);
@@ -127,7 +122,7 @@ void check_if()
 	token t;
 	check_bool(WITHOUT_BRACKET, END_THEN);//checkuje i EOL
 
-	inside_commands(END_ELSE);
+	process_command(END_ELSE);
 	//EOL
 	t = get_next_token();
 	list_insert_last(main_list, t);
@@ -135,7 +130,7 @@ void check_if()
 		printf(stderr, "unexpected EOF");
 	else if (t.type != new_line)
 		printf(stderr, "expected EOL after else");
-	inside_commands(END_END);
+	process_command(END_END);
 	//EOL
 	t = get_next_token();
 	list_insert_last(main_list, t);
@@ -302,7 +297,7 @@ void check_bool(unsigned int type, unsigned int if_or_while)
 
 
 
-void inside_commands(unsigned int type)
+void process_command(unsigned int type)
 {
 	token t;
 	switch (type)
