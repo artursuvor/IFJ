@@ -29,9 +29,7 @@ enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_b
 
 int Error = 0;
 //tělo hlavní funkce Scanner
-int main(){
-    dynArr *array = malloc(sizeof(dynArr));
-    int err = arrayInit(array);
+int Scanner(dynArr *array){
     char vstup = getchar();
     char tmp1;
     char tmp2;
@@ -88,7 +86,6 @@ int main(){
                         return 1;
                 }
     }
-    freeArray(array);
     if (Error>=1)
         return 1;
     return 0;
