@@ -25,7 +25,7 @@
 
 
 
-enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_EOF, t_EOL, equal, add, sub, mul, div, new_line};
+enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_EOF, t_EOL, equal, add, sub, mul, t_div};
 
 int Error = 0;
 //tělo hlavní funkce Scanner
@@ -74,8 +74,13 @@ int main(){
                 }
                 else if (isEOF(vstup))
                     konec = true;
-                else if (isspace(vstup))
+                else if (isLine(vstup)) {
+                    newLineToken(array);
                     vstup = getchar();
+                }
+                else if(isspace(vstup)){
+                    vstup = getchar();
+                }
                 else {
                     freeArray(array);
                     Error++;
@@ -244,18 +249,74 @@ char * esc3(char x, char y){
 }
 
 char Operator(char x, dynArr *a){
-    char tmp = x;
-    x = getchar();
-    if(isEqual(x) && tmp == '=' || isSlash(x) && tmp == '/'){
-        return Operator2(tmp,x,a);
-    }
+    char tmp = getchar();
     dynStr *operator1 = malloc(sizeof (dynStr));
     initStr(operator1);
-    addToStr(operator1, tmp);
-    token * send = makeToken(operator, operator1);
+    addToStr(operator1, x);
+    token * send;
+    if(x == '(') {
+        send = makeToken(left_bracket, operator1);
+    }
+    else{
+        if(x == ')'){
+            send = makeToken(right_bracket, operator1);
+        }
+        else{
+            if(isEqual(x)){
+                if(isEqual(tmp)){
+                    addToStr(operator1,tmp);
+                    send = makeToken(operator, operator1);
+                    tmp = getchar();
+                }
+                else{
+                    send = makeToken(equal, operator1);
+                }
+            }
+            if(x == '+'){
+                send = makeToken(add, operator1);
+            }
+            else{
+                if(x == '-'){
+                    send = makeToken(sub, operator1);
+                }
+                else{
+                    if(x == '*'){
+                        send = makeToken(mul, operator1);
+                    }
+                    else{
+                        if (isSlash(x)){
+                            if(isSlash(tmp)){
+                                addToStr(operator1,tmp);
+                                send = makeToken(operator,operator1);
+                                tmp = getchar();
+                            }
+                            else{
+                                send = makeToken(t_div, operator1);
+                            }
+                        }
+                        else{
+                            if(x == '>' || x == '<'){
+                                if(isEqual(tmp)){
+                                    addToStr(operator1, tmp);
+                                    send = makeToken(operator, operator1);
+                                    tmp = getchar();
+                                }
+                                else{
+                                    send = makeToken(operator, operator1);
+                                }
+                            }
+                            else{
+                                send = makeToken(operator, operator1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     arrayInsert(a, *send);
     freeStr(operator1);
-    return x;
+    return tmp;
 }
 
 char Operator2(char x, char y, dynArr *a){
@@ -280,14 +341,14 @@ token * makeToken(int type, dynStr *value){
     printToken(*send);
     return send;
 }
-//debug
-void debug(dynArr *a){
-    for (size_t i = 0; i < sizeof(a->array) - 1; i++)
-    {
-        printf("Token type: %i\t", a->array->type);
-        printf("Token value: %s\n", a->array[i].value->str);
-    }
-}
 void printToken(token tok){
-    printf("Token: %i, value %s\n", tok.type, tok.value->str);
+    printf("Token value = %s\n", tok.value->str);
+}
+void newLineToken(dynArr *a){
+    dynStr *hhh = malloc(sizeof (dynStr));
+    initStr(hhh);
+    addToStr(hhh, '\n');
+    token *send = makeToken(t_EOL, hhh);
+    arrayInsert(a, *send);
+    return;
 }

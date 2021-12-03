@@ -29,5 +29,5 @@ char Operator(char x, dynArr *a); //done
 char Operator2(char x, char y, dynArr *a); //done
 void debug(dynArr *a); //NovákDebug
 void printToken(token tok);
-
+void newLineToken(dynArr *a);
 #endif //IFJ_SCANNER_H

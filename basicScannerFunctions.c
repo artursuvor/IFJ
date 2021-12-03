@@ -94,3 +94,7 @@ void skipBlockComment(){
         }
     }
 }
+
+bool isLine(char x){
+    return x == '\n';
+}
