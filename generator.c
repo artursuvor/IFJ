@@ -6,7 +6,7 @@
 *                   xfuisl00                   
 *                   xcicmi00
 *skola:             Vysoke uceni technicke v Brne - FIT
-*datum vytvorenia:  1.12.2020
+*datum vytvorenia:  1.12.2021
 */
 
 //v scanner.c prehodit enum do scanner.h aby sme neincludovali .c subor
