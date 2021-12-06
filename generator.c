@@ -9,8 +9,6 @@
 *datum vytvorenia:  1.12.2021
 */
 
-//v scanner.c prehodit enum do scanner.h aby sme neincludovali .c subor
-#include "scanner.c"
 #include "syntax.h"
 #include "generator.h"
    
@@ -79,14 +77,17 @@ void arithmetic_operation(token t_type, token tok1, token tok2, bool in_function
         in_function ? printf("ADD LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value) : printf("ADD GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
         break;   
 
+    // sub
     case 12:
         in_function ? printf("SUB LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value) : printf("SUB GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
         break;  
-
+    
+    // mul
     case 13:
         in_function ? printf("MUL LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value) : printf("MUL GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
         break;
 
+    //div
     case 14: 
         in_function ? printf("DIV LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value) : printf("DIV GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
         break;         
@@ -162,7 +163,7 @@ void relational_operation(token t_type, token tok1, token tok2, bool in_function
 
 // if start 
 void if_begin(token label, token result, bool in_function){
-    in_function ? printf("JUMPIFNEQ %s LF@%s bool@true\n", label.value, result.value) : printf("JUMPIFNEQ %s GF@%s bool@true\n", label.value, result.value); 
+    in_function ? printf("JUMPIFEQ %s LF@%s bool@true\n", label.value, result.value) : printf("JUMPIFEQ %s GF@%s bool@true\n", label.value, result.value); 
 }
 
 
@@ -175,53 +176,4 @@ void else_label(token label){
 // if end
 void if_end(token label){
     printf("JUMP %s\n", label.value);
-}
-
-
-// print
-// is_const == 1 znamena ze ide o konstantu
-void ifjcode_write(token tok, bool in_function, bool is_const){
-    if (is_const)
-        in_function ? printf("WRITE %s\n", tok.value) : printf("WRITE %s\n", tok.value);   
-
-    else
-        in_function ? printf("WRITE LF@%s\n", tok.value) : printf("WRITE GF@%s\n", tok.value);
-    
-    printf("WRITE string@\\010\n"); 
-}
-
-
-//vestavena funkce inputi
-void ifjcode_inputi(){
-
-}
-
-//vestavena funkce inputok
-void ifjcode_inputok(){
-
-}
-
-//vestavena funkce inputs
-void ifjcode_inputs(){
-
-}
-
-//vestavena funkce len
-void ifj_len(){
-
-}
-
-//vestavena funkce substr
-void ifjcode_substr(){
-  
-}
-
-//vestavena funkce ord
-void ifjcode_ord(){
-    
-}
-
-// vestavena funkce chr
-void ifjcode_chr(){
-
 }

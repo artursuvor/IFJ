@@ -37,12 +37,3 @@ void if_end(token label);
 // print
 void ifjcode_write(token tok, bool in_function, bool is_const);
    
-
-//vestavene funkce 
-void ifjcode_inputi();
-void ifjcode_inputok();
-void ifjcode_inputs();
-void ifjcode_len();
-void ifjcode_substr();
-void ifjcode_ord();
-void ifjcode_chr();
