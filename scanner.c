@@ -24,9 +24,6 @@
 #define STATE_EOL 198
 
 
-
-enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_EOF, equal, add, sub, mul, div, new_line};
-
 int Error = 0;
 //tělo hlavní funkce Scanner
 int main(){
