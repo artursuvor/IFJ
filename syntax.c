@@ -49,7 +49,7 @@ void check_identifier() {
 	{
 		case t_EOL:
 			break;
-		case tkn_identifier: //TODO neexistuje
+		case id:
 		case integer:
 		case string:
 		case ddouble:
@@ -72,20 +72,20 @@ void check_identifier() {
 			check_aritmetic_expression();
 			break;
 		default:
-			printf("Identifier check error");
+			printf("id check error");
 	}
 }
 
 void check_function_def() {
-	token_t next_token; //TODO token_t neexistuje
+	token next_token;
 	next_token = get_next_token();
-	list_insert_last(main_list, t); //TODO t not defined
+	list_insert_last(main_list, next_token);
 
 	switch(next_token.type) {
 		case t_EOF:
 			printf("EOF error");
 			break;
-		case identifier: //TODO neexistuje
+		case id:
 			symtable_value_t value_by_key;
 			value_by_key = my_malloc(sizeof(int));
 			if (symtable_search(table, next_token.value, value_by_key) == true)
@@ -98,9 +98,9 @@ void check_function_def() {
 	}
 
 	t = get_next_token();
-	list_insert_last(global_list, t);
-	if (t.type != tkn_left_bracket) //TODO neexistuje
-		syntax_error("expected '('");
+	list_insert_last(main_list, t);
+	if (t.type != left_bracket)
+		printf("expected '('");
 	//pokud 't.type' byla '('
 
 
@@ -109,11 +109,11 @@ void check_function_def() {
 	inside_commands(END_END);
 	//EOL
 	t = get_next_token();
-	list_insert_last(global_list, t);
-	if (t.type == tkn_end_of_file) //TODO neexistuje
-		syntax_error("unexpected eof");
-	else if (t.type != tkn_new_line) //TODO neexistuje
-		syntax_error("expected EOL");
+	list_insert_last(main_list, t);
+	if (t.type == t_EOF)
+		printf("unexpected eof");
+	else if (t.type != t_EOL)
+		printf("expected EOL");
 }
 
 
@@ -123,12 +123,12 @@ void check_function_def() {
 
 
 void check_basic_bool_expression() {
-	token_t next_token; //TODO neexistuje
+	token next_token; //TODO neexistuje
 	next_token = get_next_token();
 	list_insert_last(main_list, next_token);
 
 	switch(next_token.type) {
-		case identifier: //TODO neexistuje
+		case id:
 		case integer:
 		case ddouble:
 		case string:
@@ -163,7 +163,7 @@ int check_if_statement(int mode) {
 		case BASIC_IF:
 			check_basic_bool_expression();
 
-			token_t next_token; //TODO neexistuje
+			token next_token; //TODO neexistuje
 			next_token = get_next_token();
 			list_insert_last(main_list, next_token);
 
@@ -221,7 +221,7 @@ void check_while_statement(int mode) {
 		case BASIC_WHILE:
 			check_basic_bool_expression();
 
-			token_t next_token;
+			token next_token;
 			next_token = get_next_token();
 			list_insert_last(main_list, next_token);
 
@@ -269,7 +269,7 @@ void process_custom_or_built_in_function(int expected_parameters_count) {
 	list_insert_last(main_list, next_token);
 
 	if (next_token.type != right_bracket) {
-		if(next_token.type == identifier || next_token.type == integer || next_token.type == ddouble || next_token.type == string || next_token.type == nil) {
+		if(next_token.type == id || next_token.type == integer || next_token.type == ddouble || next_token.type == string || next_token.type == nil) {
 			process_custom_or_built_in_function(expected_parameters_count--);
 		}
 		else {
@@ -302,7 +302,7 @@ void process_left_bracket() {
 	list_insert_last(main_list, next_token);
 
 	switch(next_token.type) {
-		case identifier:
+		case id:
 		case add:
 		case sub:
 		case mul:
@@ -350,7 +350,7 @@ int process_keyword(token t) {
 }
 
 void process_inner_expression(int type) {
-	token_t next_token;
+	token next_token;
 	switch (type)
 	{
 	// case END_END:
@@ -362,10 +362,10 @@ void process_inner_expression(int type) {
 		do
 		{
 			t = get_next_token();
-			list_insert_last(global_list, t);
+			list_insert_last(main_list, t);
 			switch (t.type)
 			{
-			case identifier:
+			case id:
 				id_came(t);
 				break;
 			case t_EOL:
@@ -387,27 +387,27 @@ void process_inner_expression(int type) {
 				break;
 			case built_in_function:
 				t = get_next_token();
-				list_insert_last(global_list, t);
-				if (t.type == tkn_end_of_file)
-					syntax_error("unexpected EOF");
-				else if (t.type == tkn_left_bracket)
+				list_insert_last(main_list, t);
+				if (t.type == t_EOF)
+					printf("unexpected EOF");
+				else if (t.type == left_bracket)
 					call_func(RBRACKET);
-				else if (t.type == tkn_identifier || t.type == tkn_integer || t.type == tkn_key_nil || t.type == tkn_string || t.type == tkn_double)
+				else if (t.type == id || t.type == integer || t.type == ddouble || t.type == string || t.type == nil)
 					call_func(NOBRACKET);
-				else if (t.type == tkn_new_line)
+				else if (t.type == t_EOL)
 					break;
 				else
-					syntax_error("wrong parametrs of builtin function");
+					printf("wrong parametrs of builtin function");
 				break;
 			case integer:
 			case ddouble:
 			case string:
 			case nil:
 				t = get_next_token();
-				list_insert_last(global_list, t);
-				if (t.type == tkn_end_of_file)
-					syntax_error("unexpected EOF");
-				else if (t.type == tkn_new_line)
+				list_insert_last(main_list, t);
+				if (t.type == t_EOF)
+					printf("unexpected EOF");
+				else if (t.type == t_EOL)
 					continue;
 				else if (t.type == add || t.type == sub || t.type == mul || t.type == div)
 					expr_aritmetic(NOBRACKET);
@@ -430,7 +430,7 @@ void process_inner_expression(int type) {
 */
 
 void function check_assign(int operands_count) {
-	token_t t, u;
+	token t, u;
 	
 	list *local_list;
 	int cnt_operands = 0;
@@ -438,7 +438,7 @@ void function check_assign(int operands_count) {
 			t = get_next_token();
 			list_insert_last(main_list, t);
 			switch (t.type) {
-				case identifier:
+				case id:
 					check_assign(operands_count--);
 					break;
 				case left_bracket:
@@ -476,7 +476,7 @@ void function check_assign(int operands_count) {
 						printf("Wrong count of operators at assign!");
 					}
 				default:
-					printf("assign_syntax_error!\n");
+					printf("assign_printf!\n");
 		}
 	}
 
@@ -493,7 +493,7 @@ void check_aritmetic_expression(int option) {
 		next_token = get_next_token();
 		list_insert_last(main_list, next_token);
 		switch (t.type) {
-			case identifier:
+			case id:
 			case integer:
 			case ddouble:
 			case string:
@@ -523,7 +523,7 @@ void check_aritmetic_expression(int option) {
 		switch(next_token.type) {
 			case right_bracket:
 				break;
-			case identifier:
+			case id:
 				token another_token;
 				another_token = get_next_token();
 				list_insert_last(main_list, another_token);
@@ -547,7 +547,7 @@ void check_aritmetic_expression(int option) {
 				token another_token;
 				another_token = get_next_token();
 				list_insert_last(main_list, another_token);
-				if(another_token.type != identifier) {
+				if(another_token.type != id) {
 					printf("double operator syntax error!\n");
 				}
 				check_aritmetic_expression(EXPECTING_RIGHT_BRACKET);
@@ -576,7 +576,7 @@ void parser_start() {
 			    continue;
             case t_EOF:
 			    break;
-            case identifier:
+            case id:
 			    check_identifier();
 			    break;
             case keyword:
