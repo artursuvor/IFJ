@@ -24,9 +24,6 @@
 #define STATE_EOL 198
 
 
-
-enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_EOF, t_EOL, equal, add, sub, mul, t_div};
-
 int Error = 0;
 //tělo hlavní funkce Scanner
 int Scanner(dynArr *array){
@@ -94,7 +91,7 @@ int Scanner(dynArr *array){
 //Samotné funkce potřebné pro scanner
 
 char Word(char x,dynArr *a){
-    token * send;
+    token_t* send;
     dynStr *slovo = malloc(sizeof (dynStr));
     initStr(slovo);
     addToStr(slovo, x);
@@ -114,7 +111,7 @@ char Word(char x,dynArr *a){
 }
 
 char Number(char x,dynArr *a){
-    token * send;
+    token_t* send;
     dynStr *number = malloc(sizeof (dynStr));
     initStr(number);
     addToStr(number, x);
@@ -147,7 +144,7 @@ char Double(dynStr *number, dynArr *a){
     if(isE(x))
         return Exponent(number, a);
     else{
-        token * send = makeToken(ddouble, number);
+        token_t* send = makeToken(ddouble, number);
         arrayInsert(a, *send);
     }
     freeStr(number);
@@ -167,7 +164,7 @@ char Exponent(dynStr *number, dynArr *a){
             x = getchar();
         }
     }
-    token * send = makeToken(exponent, number);
+    token_t* send = makeToken(exponent, number);
     arrayInsert(a, *send);
     freeStr(number);
     return x;
@@ -180,7 +177,7 @@ char Exponent2(dynStr *number, dynArr *a,char x){
         addToStr(number,x);
         x = getchar();
     }
-    token * send = makeToken(exponent, number);
+    token_t* send = makeToken(exponent, number);
     arrayInsert(a, *send);
     freeStr(number);
     return x;
@@ -202,7 +199,7 @@ char String(char x, dynArr *a){
             addToStr(slovo,x);
         x = getchar();
     }
-    token * send = makeToken(string,slovo);
+    token_t* send = makeToken(string,slovo);
     arrayInsert(a, *send);
     freeStr(slovo);
     return getchar();
@@ -250,7 +247,7 @@ char Operator(char x, dynArr *a){
     dynStr *operator1 = malloc(sizeof (dynStr));
     initStr(operator1);
     addToStr(operator1, x);
-    token * send;
+    token_t* send;
     if(x == '(') {
         send = makeToken(left_bracket, operator1);
     }
@@ -321,14 +318,14 @@ char Operator2(char x, char y, dynArr *a){
     initStr(sekvence);
     addToStr(sekvence, x);
     addToStr(sekvence, y);
-    token * send = makeToken(operator, sekvence);
+    token_t* send = makeToken(operator, sekvence);
     arrayInsert(a, *send);
     freeStr(sekvence);
     return getchar();
 }
 
-token * makeToken(int type, dynStr *value){
-    token *send = malloc(sizeof (token));
+token_t* makeToken(int type, dynStr *value){
+    token_t*send = malloc(sizeof (token));
     if(!send){
         printf("Error\n");
         return NULL;
@@ -338,14 +335,14 @@ token * makeToken(int type, dynStr *value){
     printToken(*send);
     return send;
 }
-void printToken(token tok){
-    printf("Token value = %s\n", tok.value->str);
+void printToken(token_ttok){
+    printf("token value = %s\n", tok.value->str);
 }
 void newLineToken(dynArr *a){
     dynStr *hhh = malloc(sizeof (dynStr));
     initStr(hhh);
     addToStr(hhh, '\n');
-    token *send = makeToken(t_EOL, hhh);
+    token_t*send = makeToken(t_EOL, hhh);
     arrayInsert(a, *send);
     return;
 }
