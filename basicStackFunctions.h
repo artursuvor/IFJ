@@ -26,7 +26,7 @@ int isFull(TStack *s);
 
 int isEmpty(TStack *s);
 
-void push(TStack *s, stack_item *item);
+void stack_push(TStack *s, stack_item *item);
 
 stack_item pop(TStack *s);
 

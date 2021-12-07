@@ -16,7 +16,6 @@ char precedence_table[PREC_SIZE][PREC_SIZE] =
     { '<' , '<' , '<' , '>' , 'N' , '<' , '>' }, // log
     { '>' , '>' , 'N' , '>' , '>' , 'N' , '>' }, // i = operand
     { '<' , '<' , '<' , 'N' , '<' , '<' , 'E' }  // $
-// 
 };
 
 precedence_table_i token_type_to_symbol(token_t *token, TStack *stack)
@@ -74,7 +73,7 @@ void precedence_analysis(dynArr *token_array){
     
     while (!done)
     {
-        token = get_next_token(token_array, position);
+        *token = get_next_token(token_array, position);
         currentTokenIndex = token_type_to_symbol(token, stack);
         
         topTableItem = top_item(stack);
@@ -102,8 +101,8 @@ void precedence_analysis(dynArr *token_array){
     return;
 }
 
-token_t *get_next_token(dynArr *a, int position){
-    token_t *retVal = a->array[position];
+token_t get_next_token(dynArr *array, int position){
+    token_t retVal = array->array[position];
     position++;
     return retVal;
 }
@@ -138,9 +137,8 @@ void reduce_operation(token_t *token, precedence_table_i *currentTokenIndex, TSt
     stack_item *popItem = pop(stack);
     stack_item *tmp;
 
-    /*TODO
-    void *stopITemp;
-    void *popITemp = popItem;*/
+    stack_item *stopITemp;
+    stack_item *popITemp = popItem;
 
     if (popItem->type == TERM)
     {
@@ -161,11 +159,49 @@ void reduce_operation(token_t *token, precedence_table_i *currentTokenIndex, TSt
             tmp = stack->data[firstStartIndex + 1];
             if (tmp->token->type = L_BRACKET)
             {
-                
+                brackets = true;
             }
-            
         }
         
+        if (!brackets)
+        {
+            //TODO prostě copy+paste
+            char *operand;
+            char *push;
+
+            switch (popItem->type)
+            {
+            case id:
+                /* code */
+                break;
+            case string:
+                /* code */
+                break;
+            case integer:
+                /* code */
+                break;
+            case ddouble:
+                /* code */
+                break;
+            default:
+                break;
+            }
+            stopITemp = pop(stack);
+            if (stopITemp)
+            {
+                free(stopITemp);
+                stopITemp = NULL;
+                popItem->type = NON_TERM;
+                stack_push(stack, popItem);
+
+                //push
+                //free push
+            }
+            return;
+        }
     }
-    
+    else
+    {
+        //TODO
+    }
 }
