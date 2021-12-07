@@ -10,7 +10,7 @@
 int arrayInit(dynArr *array){
     array->array = malloc(sizeof(token_t));
     if(!array->array){
-        return 1; //ošetření mallocu
+        exit(99); //ošetření mallocu
     }
     array->size = 1;
     array->used = 0;
