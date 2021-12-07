@@ -41,7 +41,7 @@ list *main_list;
 
 void check_identifier() {
 	token next_token;
-	next_token = get_next_token();
+	next_token = get_next_token(); //TODO get_next_token() jste smazali, nikde ji nevidím
 
 	list_insert_last(main_list, next_token);
 
@@ -49,11 +49,11 @@ void check_identifier() {
 	{
 		case t_EOL:
 			break;
-		case tkn_identifier:
+		case tkn_identifier: //TODO neexistuje
 		case integer:
 		case string:
 		case ddouble:
-		case nil:
+		case nil: //TODO neexistuje
 			int parameters_count = 0; // TODO Find Function in a function table and return number of parameters!
 			check_function_def();
 			// built_in_function_call_check(parameters_count);
@@ -77,20 +77,20 @@ void check_identifier() {
 }
 
 void check_function_def() {
-	token_t next_token;
+	token_t next_token; //TODO token_t neexistuje
 	next_token = get_next_token();
-	list_insert_last(main_list, t);
+	list_insert_last(main_list, t); //TODO t not defined
 
 	switch(next_token.type) {
 		case t_EOF:
 			printf("EOF error");
 			break;
-		case identifier:
+		case identifier: //TODO neexistuje
 			symtable_value_t value_by_key;
 			value_by_key = my_malloc(sizeof(int));
 			if (symtable_search(table, next_token.value, value_by_key) == true)
 				printf("Function was already defined!");
-			symtable_insert(&table, t.value, param_cnt);s
+			symtable_insert(&table, t.value, param_cnt);s //TODO typo chyby
 			break;
 		default:
 			printf("Function def error!");
@@ -99,7 +99,7 @@ void check_function_def() {
 
 	t = get_next_token();
 	list_insert_last(global_list, t);
-	if (t.type != tkn_left_bracket)
+	if (t.type != tkn_left_bracket) //TODO neexistuje
 		syntax_error("expected '('");
 	//pokud 't.type' byla '('
 
@@ -110,9 +110,9 @@ void check_function_def() {
 	//EOL
 	t = get_next_token();
 	list_insert_last(global_list, t);
-	if (t.type == tkn_end_of_file)
+	if (t.type == tkn_end_of_file) //TODO neexistuje
 		syntax_error("unexpected eof");
-	else if (t.type != tkn_new_line)
+	else if (t.type != tkn_new_line) //TODO neexistuje
 		syntax_error("expected EOL");
 }
 
@@ -123,27 +123,27 @@ void check_function_def() {
 
 
 void check_basic_bool_expression() {
-	token_t next_token;
+	token_t next_token; //TODO neexistuje
 	next_token = get_next_token();
 	list_insert_last(main_list, next_token);
 
 	switch(next_token.type) {
-		case identifier:
+		case identifier: //TODO neexistuje
 		case integer:
 		case ddouble:
 		case string:
-		case nil:
+		case nil: //TODO neexistuje
 			token another_token;
 			another_token = get_next_token();
 			list_insert_last(main_list, another_token);
 
 			switch(another_token.type) {
-				case double_equal:
-				case greater:
-				case greater_or_equal:
-				case less:
-				case less_or_equal:
-				case not:
+				case double_equal: //TODO neexistuje
+				case greater: //TODO neexistuje
+				case greater_or_equal: //TODO neexistuje
+				case less: //TODO neexistuje
+				case less_or_equal: //TODO neexistuje
+				case not: //TODO neexistuje
 					check_basic_bool_expression();
 				default:
 					printf("Basic bool expression error! \n");
@@ -163,7 +163,7 @@ int check_if_statement(int mode) {
 		case BASIC_IF:
 			check_basic_bool_expression();
 
-			token_t next_token;
+			token_t next_token; //TODO neexistuje
 			next_token = get_next_token();
 			list_insert_last(main_list, next_token);
 
