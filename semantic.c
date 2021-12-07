@@ -31,7 +31,8 @@ void process_identifier() {
     switch (next_token.type)
 	{
         case id:
-            check_function_call();
+            int arguments_count = 0; //TODO Get arguments count!
+            check_function_call(arguments_count);
             break;
         case equal:
              check_assign();
@@ -43,7 +44,7 @@ void process_identifier() {
     
 }
 
-void check_function_call() {
+void check_function_call(int arguments_count) {
     token next_token;
     next_token = get_next_token();
     switch (next_token.type)
@@ -53,6 +54,20 @@ void check_function_call() {
 				printf(stderr, "Neznamy token!");
 			break;
             break;
+        case reads:
+		case readi:
+		case readn:
+		case write:
+		case tointeger:
+		case substr:
+		case ord:
+		case chr:
+            int arguments_count = 0; //TODO get arguments count and pass to checker!
+            token next_token;
+            next_token = get_next_token();
+            for (int i = 0; i < sizeof(types_array); i++) {
+                // Kontrola typu argumentu
+            }
         default:
             printf(stderr, "Nevhodny typ tokenu!");
             break;

@@ -7,30 +7,564 @@
 #include "scanner.c"
 #include "syntax.h"
 
-#define WITH_BRACKET 50
-#define WITHOUT_BRACKET 60 
-#define END_END 70
-#define END_DO 71
-#define END_THEN 72
-#define END_ELSE 73
 
-//globálníé proměnná pro funkce get_next_token()
-int next_token = -1;
+#define IF_KEYWORD 201
+#define WHILE_KEYWORD 202
+#define END_KEYWORD 203
+#define DO_KEYWORD 204
+#define ELSE_KEYWORD 205
+#define FUNCTION_KEYWORD 206
+#define GLOBAL_KEYWORD 207
+#define LOCAL_KEYWORD 208
+#define REQUIRE_KEYWORD 209
+#define RETURN_KEYWORD 210
+#define THEN_KEYWORD 211
 
-//funkce pro získání dalšího tokenu z dynArr
-token get_next_token(dynArr *a){
-	next_token++;
-	return a->array[next_token];
-};
+
+#define EXPECTING_RIGHT_BRACKET 301
+#define NO_BRACKET 302
+
+#define EXPECTING_ELSE_OR_END 401
+#define EXPECTING_END 402
+#define BASIC_IF 403
+#define BASIC_WHILE 404
+
+#define DECLARATION 501
+#define WITH_BRACKET 502
 
 symtable_node_t *table;
 list *main_list;
 
-void parser_start(dynArr *a) {
+/*
+	Funkce zkontroluje kod po tom co dostane identifikator.
+*/
 
-	//  Inicializace
+void check_identifier() {
+	token next_token;
+	next_token = get_next_token();
 
-	token t;
+	list_insert_last(main_list, next_token);
+
+	switch (next_token.type)
+	{
+		case t_EOL:
+			break;
+		case tkn_identifier:
+		case integer:
+		case string:
+		case ddouble:
+		case nil:
+			int parameters_count = 0; // TODO Find Function in a function table and return number of parameters!
+			check_function_def();
+			// built_in_function_call_check(parameters_count);
+			break;
+		case left_bracket:
+			int parameters_count = 0; // TODO Find Function in a function table and return number of parameters!
+			built_in_function_call_check(parameters_count);
+			break;
+		case equal:
+			check_assign();
+			break;
+		case add:
+		case sub:
+		case mul:
+		case div:
+			check_aritmetic_expression();
+			break;
+		default:
+			printf("Identifier check error");
+	}
+}
+
+void check_function_def() {
+	token_t next_token;
+	next_token = get_next_token();
+	list_insert_last(main_list, t);
+
+	switch(next_token.type) {
+		case t_EOF:
+			printf("EOF error");
+			break;
+		case identifier:
+			symtable_value_t value_by_key;
+			value_by_key = my_malloc(sizeof(int));
+			if (symtable_search(table, next_token.value, value_by_key) == true)
+				printf("Function was already defined!");
+			symtable_insert(&table, t.value, param_cnt);s
+			break;
+		default:
+			printf("Function def error!");
+
+	}
+
+	t = get_next_token();
+	list_insert_last(global_list, t);
+	if (t.type != tkn_left_bracket)
+		syntax_error("expected '('");
+	//pokud 't.type' byla '('
+
+
+	params_func(param_cnt);
+
+	inside_commands(END_END);
+	//EOL
+	t = get_next_token();
+	list_insert_last(global_list, t);
+	if (t.type == tkn_end_of_file)
+		syntax_error("unexpected eof");
+	else if (t.type != tkn_new_line)
+		syntax_error("expected EOL");
+}
+
+
+/*
+	Funkce zkontroluje syntaxe zakladniho bool vyrazu.
+*/
+
+
+void check_basic_bool_expression() {
+	token_t next_token;
+	next_token = get_next_token();
+	list_insert_last(main_list, next_token);
+
+	switch(next_token.type) {
+		case identifier:
+		case integer:
+		case ddouble:
+		case string:
+		case nil:
+			token another_token;
+			another_token = get_next_token();
+			list_insert_last(main_list, another_token);
+
+			switch(another_token.type) {
+				case double_equal:
+				case greater:
+				case greater_or_equal:
+				case less:
+				case less_or_equal:
+				case not:
+					check_basic_bool_expression();
+				default:
+					printf("Basic bool expression error! \n");
+			}
+	}
+}
+
+
+/*
+	Funkce zkontroluje syntaxe prikazu if.
+*/
+
+int check_if_statement(int mode) {
+	
+	switch (mode)
+	{
+		case BASIC_IF:
+			check_basic_bool_expression();
+
+			token_t next_token;
+			next_token = get_next_token();
+			list_insert_last(main_list, next_token);
+
+
+			switch(next_token.type) {
+				case keyword:
+					if ((int k = process_keyword()) == THEN_KEYWORD) {
+						token another_token;
+						another_token = get_next_token;
+						if(another_token.type != t_EOL) {
+							printf("Expecting EOL after then");
+						}
+						else {
+							return EXPECTING_ELSE_OR_END;
+						}
+					}
+					else {
+						printf ("Unexpected keyword. Expected 'then'\n");
+					}
+				case t_EOL:
+					printf("Unexpected EOL, missing 'then'\n");
+				default:	
+					printf("Unexpected token at if statement!\n");
+					break;
+		break;
+
+		case EXPECTING_ELSE_OR_END:
+			token next_token;
+			next_token = get_next_token();
+			if (next_token.type != t_EOL) {
+				printf ("EOL expecting after else! \n");
+			}
+			return EXPECTING_END;	
+		
+		case EXPECTING_END:
+			token next_token;
+			next_token = get_next_token();
+			if (next_token.type != t_EOL) {
+				printf ("EOL expecting after end! \n");
+			}
+			return 0;	
+		default:
+			return 0;	
+	}
+	}
+}
+
+
+/*
+	Funkce zkontroluje syntaxe prikazu while.
+*/
+void check_while_statement(int mode) {
+
+	switch (mode) {
+		case BASIC_WHILE:
+			check_basic_bool_expression();
+
+			token_t next_token;
+			next_token = get_next_token();
+			list_insert_last(main_list, next_token);
+
+
+			switch(next_token.type) {
+				case keyword:
+					if ((int k = process_keyword()) == DO_KEYWORD) {
+						token another_token;
+						another_token = get_next_token;
+						if(another_token.type != t_EOL) {
+							printf("Expecting EOL after do");
+						}
+						else {
+							return EXPECTING_END;
+						}
+					}
+					else {
+						printf ("Unexpected keyword. Expected 'end'\n");
+					}
+				case t_EOL:
+					return EXPECTING_END;;
+				default:	
+					printf("Unexpected token at while statement!\n");
+					break;
+		break;
+		case EXPECTING_END:
+			token next_token;
+			next_token = get_next_token();
+			if (next_token.type != t_EOL) {
+				printf ("EOL expecting after end! \n");
+			}
+			return 0;	
+		default:
+			return 0;
+	}
+}
+
+/**
+	Funkce zkontroluje spravnost volani vestavenych a uzivatelem definovanych funkci.
+*/
+
+void process_custom_or_built_in_function(int expected_parameters_count) {
+	token next_token;
+	next_token = get_next_token();
+	list_insert_last(main_list, next_token);
+
+	if (next_token.type != right_bracket) {
+		if(next_token.type == identifier || next_token.type == integer || next_token.type == ddouble || next_token.type == string || next_token.type == nil) {
+			process_custom_or_built_in_function(expected_parameters_count--);
+		}
+		else {
+			printf("Unexpected token type at function parameters");
+		}
+	}
+	else if(next_token.type == right_bracket) {
+		if (expected_parameters_count <= 0) { // Protoze funkce muze byt volana s vetsim mnozstvim parametru
+			token another_token;
+			another_token = get_next_token();
+			list_insert_last(main_list, another_token);
+			if(another_token.type != t_EOL) {
+				printf("Unexpected token after right bracket!");
+			}
+			return;
+		} 
+		else {
+			printf("Spatny pocet parametru u volani funkce!"); // Chyba 5
+		}
+	}
+	
+}
+/**
+	Funkce bude vyvolana v pripade ze typ tokenu bude leva zavorka. Bude hledat pravou zavorku/
+*/
+void process_left_bracket() {
+	
+	token next_token;
+	next_token = get_next_token();
+	list_insert_last(main_list, next_token);
+
+	switch(next_token.type) {
+		case identifier:
+		case add:
+		case sub:
+		case mul:
+		case ddiv:
+			process_left_bracket(NO_BRACKET);
+		default:
+			printf("Wierd left bracket error! \n");
+	}
+
+	check_aritmetic_expression(EXPECTING_RIGHT_BRACKET); // jinak pokrachujeme v hledani prave zavorky
+}
+
+int process_keyword(token t) {
+	if(strcmp(t.value, "if") == 0) {
+		return IF_KEYWORD;
+	}
+	else if(strcmp(t.value, "while") == 0) {
+		return WHILE_KEYWORD;
+	}
+	else if(strcmp(t.value, "end") == 0) {
+		return END_KEYWORD;
+	}
+	else if(strcmp(t.value, "function") == 0) {
+		return FUNCTION_KEYWORD;
+	}
+	else if(strcmp(t.value, "global") == 0) {
+		return GLOBAL_KEYWORD;
+	}
+	else if(strcmp(t.value, "local") == 0) {
+		return LOCAL_KEYWORD;
+	}
+	else if(strcmp(t.value, "require") == 0) {
+		return REQUIRE_KEYWORD;
+	}
+	else if(strcmp(t.value, "return") == 0) {
+		return RETURN_KEYWORD;
+	}
+	else if(strcmp(t.value, "then") == 0) {
+		return THEN_KEYWORD;
+	}
+	else if(strcmp(t.value, "do") == 0) {
+		return DO_KEYWORD;
+	}
+
+}
+
+void process_inner_expression(int type) {
+	token_t next_token;
+	switch (type)
+	{
+	// case END_END:
+	// 	do
+	// 	{
+			
+	// 	break;
+	case END_ELSE:
+		do
+		{
+			t = get_next_token();
+			list_insert_last(global_list, t);
+			switch (t.type)
+			{
+			case identifier:
+				id_came(t);
+				break;
+			case t_EOL:
+				continue;
+			case keyword:
+				int keyword = process_keyword();
+				switch(keyword) {
+					case IF_KEYWORD:
+						check_if_statement();
+						break;
+					case WHILE_KEYWORD:
+						check_while_statement();
+						break;
+					case END_KEYWORD:
+						break;
+					default:
+						printf("Unknown keyword error!");
+				}
+				break;
+			case built_in_function:
+				t = get_next_token();
+				list_insert_last(global_list, t);
+				if (t.type == tkn_end_of_file)
+					syntax_error("unexpected EOF");
+				else if (t.type == tkn_left_bracket)
+					call_func(RBRACKET);
+				else if (t.type == tkn_identifier || t.type == tkn_integer || t.type == tkn_key_nil || t.type == tkn_string || t.type == tkn_double)
+					call_func(NOBRACKET);
+				else if (t.type == tkn_new_line)
+					break;
+				else
+					syntax_error("wrong parametrs of builtin function");
+				break;
+			case integer:
+			case ddouble:
+			case string:
+			case nil:
+				t = get_next_token();
+				list_insert_last(global_list, t);
+				if (t.type == tkn_end_of_file)
+					syntax_error("unexpected EOF");
+				else if (t.type == tkn_new_line)
+					continue;
+				else if (t.type == add || t.type == sub || t.type == mul || t.type == div)
+					expr_aritmetic(NOBRACKET);
+				else
+					printf("expected EOL or expression after item (inside if)");
+				break;
+			default:
+				printf("expected keyword 'else'");
+				break;
+			}
+
+		} while (next_token.type != keyword); // ELSE KEYWORD
+		break;
+	}
+}
+
+/**
+	Funkce zkontroluje prikaz prirazeni
+	@param operands_count - pocet ocekavanych operandu
+*/
+
+void function check_assign(int operands_count) {
+	token_t t, u;
+	
+	list *local_list;
+	int cnt_operands = 0;
+		while (operands_count != 0) {
+			t = get_next_token();
+			list_insert_last(main_list, t);
+			switch (t.type) {
+				case identifier:
+					check_assign(operands_count--);
+					break;
+				case left_bracket:
+					process_left_bracket();
+				case keyword():
+					if(strcmp(t.value, "function") == 0) {
+						process_function_call();
+					}
+					else {
+						printf("Chyba u assign keyword!\n");
+					}
+				case integer:
+				case ddouble:
+				case string:
+				case nil:
+					check_assign(operands_count--);
+					break;
+				case add:
+				case sub:
+				case ddiv:
+				case mul:
+					check_aritmetic_expression();
+					break;
+				case reads:
+				case readi:
+				case readn:
+				case write:
+				case tointeger:
+				case substr:
+				case ord:
+				case chr:
+					built_in_function_call_check();
+				case t_EOL:
+					if (operands_count != 0) {
+						printf("Wrong count of operators at assign!");
+					}
+				default:
+					printf("assign_syntax_error!\n");
+		}
+	}
+
+}
+/**
+	Funkce pro kontrolu aritmetickych vyrazu. Ma 2 scenaria: pokud ocekava pravou zavorku nebo pokud ne.
+*/
+
+
+void check_aritmetic_expression(int option) {
+	
+	if(option == NO_BRACKET) {
+		token next_token;
+		next_token = get_next_token();
+		list_insert_last(main_list, next_token);
+		switch (t.type) {
+			case identifier:
+			case integer:
+			case ddouble:
+			case string:
+			case nil:
+				token another_token;
+				another_token = get_next_token();
+				list_insert_last(main_list, another_token);
+				switch (another_token.type) {
+					case t_EOL:
+						break;
+					case add:
+					case sub:
+					case mul:
+					case ddiv:
+						check_aritmetic_expression(NO_BRACKET);
+					default:
+						printf("assign syntax error! \n");
+				}
+				return;
+		}
+	}
+	else if(option == EXPECTING_RIGHT_BRACKET) {
+		token next_token;
+		next_token = get_next_token();
+		list_insert_last(main_list, next_token);
+
+		switch(next_token.type) {
+			case right_bracket:
+				break;
+			case identifier:
+				token another_token;
+				another_token = get_next_token();
+				list_insert_last(main_list, another_token);
+				switch(another_token.type) {
+					case t_EOL:
+						printf("Expecting right bracket syntax error! \n");
+					case add:
+					case sub:
+					case mul:
+					case ddiv:
+						check_aritmetic_expression(EXPECTING_RIGHT_BRACKET);
+					default:
+						printf("Aritmetic expression at expecting right bracket 1!");
+				}
+				break;
+			case add:
+			case sub:
+			case mul:
+			case ddiv:
+			case left_bracket:
+				token another_token;
+				another_token = get_next_token();
+				list_insert_last(main_list, another_token);
+				if(another_token.type != identifier) {
+					printf("double operator syntax error!\n");
+				}
+				check_aritmetic_expression(EXPECTING_RIGHT_BRACKET);
+
+		}
+		return;
+	}
+}
+
+/**
+	Hlavni funkce parseru. Nastavuje listy a tabulky
+*/
+
+void parser_start() {
+
+
+    token t;
 	table = symtable_init();
 	list main_list = init_list();
 	list function_list = init_list();
@@ -38,359 +572,54 @@ void parser_start(dynArr *a) {
 	while ((t.type) != t_EOF) {
 		switch (t.type)
 		{
-			
-			case id:
-				check_id (t);
-				break;
-			case string:
-			case integer:
-			case ddouble:
-				token next_token;
-				next_token = get_next_token();
-				list_insert_last(main_list, t);
-				if (t.type == add || t.type == sub || t.type == mul || t.type == div)
-					check_arithmetic(WITHOUT_BRACKET);
-				else if (t.type == new_line)
-					continue;
-				else
-					printf(stderr,"unexpected token after item");
-				break;
-			case t_EOL:
-				continue;
-			default:
-				printf(stderr, "Neznamy token");
-				break;
-		}
-	}
-
-	semantic_start(function_list, table);
-	return main_list;
-}
-
-/*
-    Funkce bude vyvolana pokud typ tokentu bude identifikator
-*/
-
-
-void check_id (token tok) {
-    token next_token;
-	next_token = get_next_token(); // funkce scanneru ktera vrati vzdy jeden token
-
-	list_insert_last(main_list, next_token);
-	char *name;
-
-	switch (next_token.type)
-	{
-	case integer:
-        check_number();
-		break;
-	case equal: // Prirazeni
-		name = malloc(sizeof(char)*(strlen(tok.value) + 1));
-		strcpy(name, tok.value); // ulozime hodnotu nazvu
-
-		check_assign(); // funkce pro kontrolu prirazeni
-		break;
-	case add:
-	case sub:
-	case mul:
-	case div:
-		check_arithmetic(WITHOUT_BRACKET); // Tady bude kontrola vyrazu 
-		break;
-	case new_line:
-		break;
-	default:
-		return 1; // jaka tady ma byt chyba?
-	}
-}
-
-/**
- * Dale nasleduji funkce pro kontrolu jednotlivych konstrukci. Kazda funkce bud nevrati nic nebo vyhodi chybu.
-*/
-
-
-
-
-void check_while()
-{
-	token t;
-	check_bool(WITHOUT_BRACKET, END_DO);//checkuje i EOL
-
-	process_command(END_END);
-	//EOL
-	t = get_next_token();
-	list_insert_last(main_list, t);
-	if (t.type == t_EOF)
-		printf(stderr, "unexpected EOF");
-	else if (t.type != new_line)
-		printf(stderr, "expected EOL");
-}
-
-void check_if()
-{
-	token t;
-	check_bool(WITHOUT_BRACKET, END_THEN);//checkuje i EOL
-
-	process_command(END_ELSE);
-	//EOL
-	t = get_next_token();
-	list_insert_last(main_list, t);
-	if (t.type == t_EOF)
-		printf(stderr, "unexpected EOF");
-	else if (t.type != new_line)
-		printf(stderr, "expected EOL after else");
-	process_command(END_END);
-	//EOL
-	t = get_next_token();
-	list_insert_last(main_list, t);
-	if (t.type == t_EOF)
-		printf(stderr, "unexpected eof");
-	else if (t.type != new_line)
-		printf(stderr, "expected EOL after end");
-}
-
-/**
- * Funkce na kontrolu arithmetickych vyrazu
-*/
-
-void check_arithmetic(unsigned int type)
-{
-	token t, u;
-	switch (type)
-	{
-	case WITHOUT_BRACKET: // Pokud neocekavame pravou zavorku
-		t = get_next_token();
-		list_insert_last(main_list, t);
-		if (t.type == left_bracket)
-			epxr_left_bracket_checkEOL();
-		else if (t.type == id || t.type == integer || t.type == string || t.type == ddouble)
-		{
-			u = get_next_token();
-			list_insert_last(main_list, u);
-			if (u.type == sub || u.type == add || u.type == mul || u.type == div)
-				check_arithmetic(WITHOUT_BRACKET);
-			else if (u.type == new_line)
-				return;
-			else
-				printf(stderr, "wrong expression, expected EOL or another operator (end of expression)");
-
-		}
-		else
-			printf(stderr, "wrong expression, expected '(' or id/item");
-		break;
-		/**
-		 * Ocekavame pravou zavorku
-		*/
-	case WITH_BRACKET:
-		t = get_next_token();
-		list_insert_last(main_list, t);
-		if (t.type == left_bracket)
-		{
-			check_aritmetic(WITH_BRACKET);
-			u = get_next_token();
-			list_insert_last(main_list, u);
-			if (u.type == right_bracket)
-				return;
-			else if (u.type == add || u.type == sub || u.type == mul || u.type == div)
-				check_arithmetic(WITH_BRACKET);
-			else
-				printf(stderr, "wrong expression, expected ')'");
-		}
-		else if (t.type == id || t.type == integer || t.type == string || t.type == ddouble)
-		{
-			u = get_next_token();
-			list_insert_last(main_list, u);
-			if (u.type == add || u.type == sub || u.type == mul || u.type == div)
-				check_arithmetic(WITH_BRACKET);
-			else if (u.type == right_bracket)
-				return;
-			else
-				printf(stderr, "wrong expression, expected ')' or operator");
-		}
-		else
-			printf(stderr, "wrong expression, expected '(' or id/item");
-		break;
-	}
-}
-
-void epxr_left_bracket_checkEOL()
-{
-	token u;
-	check_arithmetic(WITH_BRACKET);
-	u = get_next_token();
-	list_insert_last(main_list, u);
-	if (u.type == add || u.type == sub || u.type == mul || u.type == div)
-		check_arithmetic(WITHOUT_BRACKET);
-	else if (u.type == new_line)
-		return;
-	else
-		printf(stderr, "wrong expression, expected operator or EOL");
-
-}
-
-void check_bool(unsigned int type, unsigned int if_or_while)
-{	token t, u;
-	switch (type)
-	{
-	case WITHOUT_BRACKET:
-		t = get_next_token();
-		list_insert_last(main_list, t);
-		if (t.type == left_bracket)
-			expr_bool_left_bracket_check_ending(if_or_while);
-		else if (t.type == id || t.type == integer || t.type == string || t.type == ddouble)
-		{
-			u = get_next_token();
-			list_insert_last(main_list, u);
-			if (u.type == sub || u.type == add || u.type == mul || u.type == div || u.type == tkn_equal_2 || u.type == tkn_not_equal || u.type == tkn_less || u.type == tkn_less_or_equal || u.type == tkn_more || u.type == tkn_more_or_equal)
-				expr_bool(WITHOUT_BRACKET, if_or_while);
-			else
-			{
-				switch (if_or_while)
-				{
-				case END_DO://while
-					if (u.type != tkn_key_do)
-						printf(stderr, "wrong bool expression, expected keyword 'do' or another operator");
-					break;
-				case END_THEN:
-					if (u.type != tkn_key_then)
-						printf(stderr, "wrong bool expression, expected keyword 'then'");
-					break;
-				}
-				u = get_next_token();
-				list_insert_last(main_list, u);
-				if (u.type == new_line)
-					return;
-				else
-					printf(stderr, "wrong bool expression, expected EOL after keyword then/do");
-			}
-		}
-		else
-			printf(stderr, "wrong bool expression, expected '(' or id/item");
-		break;
-	case WITH_BRACKET:
-		t = get_next_token();
-		list_insert_last(main_list, t);
-		if (t.type == left_bracket)
-		{
-			expr_bool(WITH_BRACKET, if_or_while);
-			u = get_next_token();
-			list_insert_last(main_list, u);
-			if (u.type == right_bracket)
-				return;
-			else if (u.type == sub || u.type == add || u.type == mul || u.type == div || u.type == tkn_equal_2 || u.type == tkn_not_equal || u.type == tkn_less || u.type == tkn_less_or_equal || u.type == tkn_more || u.type == tkn_more_or_equal)
-				expr_bool(WITH_BRACKET, if_or_while);
-			else
-				printf(stderr, "wrong expression, expected ')'");
-		}
-		else if (t.type == id || t.type == integer || t.type == string || t.type == ddouble)
-		{
-			u = get_next_token();
-			list_insert_last(main_list, u);
-			if (u.type == sub || u.type == add || u.type == mul || u.type == div || u.type == tkn_equal_2 || u.type == tkn_not_equal || u.type == tkn_less || u.type == tkn_less_or_equal || u.type == tkn_more || u.type == tkn_more_or_equal)
-				expr_bool(WITH_BRACKET, if_or_while);
-			else if (u.type == right_bracket)
-				return;
-			else
-				printf(stderr, "wrong bool expression, expected ')' or operator");
-		}
-		else
-			printf(stderr, "wrong bool expression, expected '(' or id/item");
-		break;
-	}
-}
-
-/**
- * Kontrola vyrazu u if a while
-*/
-
-
-
-
-void process_command(unsigned int type)
-{
-	token t;
-	switch (type)
-	{
-	case END_END:
-		do
-		{
-			t = get_next_token();
-			list_insert_last(main_list, t);
-			switch (t.type)
-			{
-			case id:
-				id_came(t);
-				break;
-			case new_line:
-				continue;
-			case token_if:
-				check_if();
-				break;
-			case token_while:
-				check_while();
-				break;
-			case ddouble:
-			case integer:
-			case string:
-				t = get_next_token();
-				list_insert_last(main_list, t);
-				if (t.type == t_EOF)
-					printf(stderr, "unexpected EOF");
-				else if (t.type == new_line)
-					continue;
-				else if (t.type == sub || t.type == add || t.type == mul || t.type == div)
-					check_aritmetic(WITHOUT_BRACKET);
-				else
-					printf(stderr, "expected EOL or expression after item (inside commands)");
-				break;
-			case tkn_key_end:
-				break;
-			default:
-				printf(stderr, "expected keyword 'end'");
-				break;
-			}
-
-		} while (t.type != tkn_key_end);
-		break;
-	case END_ELSE:
-		do
-		{
-			t = get_next_token();
-			list_insert_last(main_list, t);
-			switch (t.type)
-			{
-			case id:
-				id_came(t);
-				break;
-			case new_line:
-				continue;
-			case token_if:
-				check_if();
-				break;
-			case token_while:
-				check_while();
-				break;
-			case ddouble:
-			case integer:
-			case string:
-				t = get_next_token();
-				list_insert_last(main_list, t);
-				if (t.type == t_EOF)
-					printf(stderr, "unexpected EOF");
-				else if (t.type == new_line)
-					continue;
-				else if (t.type == sub || t.type == add || t.type == mul || t.type == div)
-					check_aritmetic(WITHOUT_BRACKET);
-				else
-					printf(stderr, "expected EOL or expression after item (inside if)");
-				break;
-			case tkn_key_else:
-				break;
-			default:
-				printf(stderr, "expected keyword 'else'");
-				break;
-			}
-
-		} while (t.type != tkn_key_else);
-		break;
-	}
+            case t_EOL:
+			    continue;
+            case t_EOF:
+			    break;
+            case identifier:
+			    check_identifier();
+			    break;
+            case keyword:
+			    check_function_def();
+			    break;
+		    case if_state:
+			    check_if_statement();
+			    break;
+		    case while_state:
+			    check_while_statement();
+			    break;
+		    case integer:
+		    case ddouble:
+		    case string:
+		    case nil:
+			    t = get_next_token();
+			    list_insert_last(main_list, t);
+			    if (t.type == add || t.type == sub || t.type == mul || t.type == div)
+				    check_aritmetic_expression();
+			    else if (t.type == t_EOL)
+				    continue;
+			    else
+				    printf("unexpected token after item");
+			    break;
+            case left_bracket:
+			    process_left_bracket();
+			    break;
+		    case reads:
+			case readi:
+			case readn:
+			case write:
+			case tointeger:
+			case substr:
+			case ord:
+			case chr:
+				int parameters_count = 0; // TODO Find Function in a function table and return number of parameters!
+			    built_in_function_call_check(parameters_count);
+			    break;
+		    default:
+			    printf("Neznamy typ tokenu");
+			break;
+		    }
+        }
+    }
+	semantic_start(main_list, symtable);
 }
