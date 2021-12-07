@@ -25,7 +25,7 @@
 
 
 
-enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_END, t_EOF, t_EOL, equal, add, sub, mul, div, new_line};
+enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_END, t_EOF, t_EOL, equal, add, sub, mul, ddiv, new_line};
 
 int Error = 0;
 //tělo hlavní funkce Scanner

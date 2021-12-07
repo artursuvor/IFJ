@@ -21,6 +21,20 @@ bool symtable_search(symtable_node_t *root_pointer, char *key, symtable_value_t 
 		return symtable_search(root_pointer->rptr,key,content);
 } 
 
+symtable_value_t get_symtable_value(symtable_node_t *root_pointer, char *key, symtable_value_t content){
+	if(root_pointer == NULL)
+		return -1;
+	if(strcmp(root_pointer->key, key) == 0)
+	{
+		*content = *root_pointer->value;
+		return *content;
+	}
+    
+    if(strcmp(key, root_pointer->key) < 0)
+		return get_symtable_value(root_pointer->lptr,key,content);
+	else
+		return get_symtable_value(root_pointer->rptr,key,content);
+}
 
 void symtable_insert(symtable_node_t **root_pointer, char *key, symtable_value_t content)
 {		
