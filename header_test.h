@@ -105,6 +105,8 @@ void freeStr(dynStr *str);
 //přepsání velikosti
 void addToStr(dynStr *str, char c);
 
+void addStrToStr(dynStr *str, char *c);
+
 //základní inicializace dynamického pole
 int arrayInit(dynArr *array);
 

@@ -33,4 +33,6 @@ void freeStr(dynStr *str);
 //přepsání velikosti
 void addToStr(dynStr *str, char c);
 
+void addStrToStr(dynStr *str, char *c);
+
 #endif //IFJ_DYNSTR_H

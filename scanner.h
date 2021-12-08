@@ -11,7 +11,6 @@
 #include "dynStr.h"
 
 
-
 enum tokenType {keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_EOF, t_EOL, equal, add, sub, mul, t_div};
 
 typedef struct{

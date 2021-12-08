@@ -73,7 +73,7 @@ void check_identifier(char* name ) {
 			value = malloc(sizeof(int));
 			*value = get_symtable_value(table, next_token.value, value);
 			int *parameters_count = value;
-			//built_in_function_call_check(parameters_count);
+			process_custom_or_built_in_function(parameters_count);
 			break;
 		case equal:
 			check_assign(0);
@@ -565,7 +565,7 @@ void check_assign(int operands_count) {
 					process_left_bracket();
 				case keyword:
 					if(strcmp(t.value->str, "function") == 0) {
-						//built_in_function_call_check(0);
+						process_custom_or_built_in_function(0);
 					}
 					else if(strcmp(t.value->str, "nil") == 0){
 						check_assign(operands_count--);
@@ -592,7 +592,7 @@ void check_assign(int operands_count) {
 				// case substr:
 				// case ord:
 				// case chr:
-				// 	built_in_function_call_check();
+				// 	process_custom_or_built_in_function();
 				case t_EOL:
 					if (operands_count != 0) {
 						exit(5); //Spatny pocet operatoru u assign!
@@ -822,7 +822,7 @@ void parser_start(dynArr *list) {
 			// case ord:
 			// case chr:
 			// 	int parameters_count = 0; // TODO Find Function in a function table and return number of parameters!
-			//     built_in_function_call_check(parameters_count);
+			//     process_custom_or_built_in_function(parameters_count);
 			//     break;
 		    default:
 			    exit(2); // Neznamy typ tokenu

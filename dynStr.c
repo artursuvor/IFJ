@@ -36,3 +36,16 @@ void addToStr(dynStr *str, char c){
     str->str[str->len] = '\0';
     return;
 }
+
+void addStrToStr(dynStr *str, char *c){
+    if ((str->len + 1) >= (str->all_len)){
+        int size = str->len + DYNSTR_LEN;
+        str->str = (char *)realloc(str->str, size);
+        if (!str->str) {
+            exit(99);
+        }
+        str->all_len = size;
+    }
+    str->str = c;
+    return;
+}
