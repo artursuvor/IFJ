@@ -1,6 +1,8 @@
-#include "./scanner.h"
+#include "scanner.h"
 #include "symtable.h"
-#include "./list.h"
+#include "list.h"
+
+token get_next_token();
 
 void check_id (token tok);
 

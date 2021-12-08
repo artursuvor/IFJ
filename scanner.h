@@ -18,6 +18,8 @@ typedef struct{
 #include "dynArr.c"
 #include "dynStr.c"
 
+enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_EOF, equal, add, sub, mul, div, new_line};
+
 char Word(char x, dynArr *a); //done
 char Number(char x, dynArr *a); //done
 char String(char x, dynArr *a); //done

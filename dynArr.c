@@ -32,4 +32,3 @@ void freeArray(dynArr *array){
     array->used = 0;
     array->size = 0;
     return;
-}
