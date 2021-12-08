@@ -207,7 +207,7 @@ void if_end(token label){
     addStrToStr(buffer, tmp_buffer);
 }
 
-//generovani print
+//write function
 void ifjcode_write(token t, bool in_function, bool is_const){
     if (is_const){
         if(in_function){
