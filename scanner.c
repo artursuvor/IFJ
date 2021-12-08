@@ -325,7 +325,7 @@ char Operator2(char x, char y, dynArr *a){
 }
 
 token_t* makeToken(int type, dynStr *value){
-    token_t*send = malloc(sizeof (token));
+    token_t*send = malloc(sizeof (token_t));
     if(!send){
         printf("Error\n");
         return NULL;
@@ -335,7 +335,7 @@ token_t* makeToken(int type, dynStr *value){
     printToken(*send);
     return send;
 }
-void printToken(token_ttok){
+void printToken(token_t tok){
     printf("token value = %s\n", tok.value->str);
 }
 void newLineToken(dynArr *a){

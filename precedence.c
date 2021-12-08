@@ -18,6 +18,7 @@ char precedence_table[PREC_SIZE][PREC_SIZE] =
     { '<' , '<' , '<' , 'N' , '<' , '<' , 'E' }  // $
 };
 
+
 precedence_table_i token_type_to_symbol(token_t *token, TStack *stack)
 {
     switch (token->type)
@@ -75,7 +76,7 @@ void precedence_analysis(dynArr *token_array){
     {
         *token = get_next_token(token_array, position);
         currentTokenIndex = token_type_to_symbol(token, stack);
-        
+
         topTableItem = top_item(stack);
         topTableIndex = topTableItem->type;
         
@@ -137,14 +138,14 @@ void reduce_operation(token_t *token, precedence_table_i *currentTokenIndex, TSt
     stack_item *popItem = pop(stack);
     stack_item *tmp;
 
-    stack_item *stopITemp;
-    stack_item *popITemp = popItem;
+    void *stopITemp;
+    void *popITemp = popItem;
 
     if (popItem->type == TERM)
     {
         bool brackets = false;
         int firstStartIndex;
-        if (token->type == R_BRACKET || popItem->type == R_BRACKET)
+        if (token->type == right_bracket || popItem->token->type == right_bracket)
         {
             int topIndex = top_index(stack);
             for (int i = topIndex; i >= 0; i--)
@@ -165,25 +166,22 @@ void reduce_operation(token_t *token, precedence_table_i *currentTokenIndex, TSt
         
         if (!brackets)
         {
-            //TODO prostě copy+paste
-            char *operand;
-            char *push;
-
             switch (popItem->type)
             {
             case id:
-                /* code */
+                //operandCode = code gen pro id + malloc
                 break;
             case string:
-                /* code */
+                //operandCode = gen pro string + malloc
                 break;
             case integer:
-                /* code */
+                //operandCode = gen pro integer + malloc
                 break;
             case ddouble:
-                /* code */
+                //operandCode = gen pro ddouble + malloc
                 break;
             default:
+                exit(2);
                 break;
             }
             stopITemp = pop(stack);
@@ -191,17 +189,178 @@ void reduce_operation(token_t *token, precedence_table_i *currentTokenIndex, TSt
             {
                 free(stopITemp);
                 stopITemp = NULL;
-                popItem->type = NON_TERM;
-                stack_push(stack, popItem);
-
-                //push
-                //free push
             }
-            return;
+            popItem->type = NON_TERM;
+            stack_push(stack, popItem);
+            //gen pushs + malloc + operandCode
         }
+        else
+        {
+            if (popItem->token->type == right_bracket)
+            {
+                if (!popITemp)
+                {
+                    free(popITemp);
+                    popITemp = NULL;
+                }
+                popItem = pop(stack);
+                popITemp = pop(stack);
+                if (!popITemp)
+                {
+                    free(popITemp);
+                    popITemp = NULL;
+                }
+                stopITemp = pop(stack);
+                if (!stopITemp)
+                {
+                    free(stopITemp);
+                    stopITemp = NULL;
+                }
+                stack_push(stack, popItem);
+            }
+            else
+            {
+                if (!popITemp)
+                {
+                    free(popITemp);
+                    popITemp = NULL;
+                }
+                popITemp = pop(stack);
+                if (!popITemp)
+                {
+                    free(popITemp);
+                    popITemp = NULL;
+                }
+                stopITemp = pop(stack);
+                if (!stopITemp)
+                {
+                    free(stopITemp);
+                    stopITemp = NULL;
+                }
+                stack_push(stack, popItem);
+            }
+            
+        }
+        return;
     }
     else
     {
-        //TODO
+        bool same_types = false;
+
+        stack_item *right_operand = popItem;
+        popItem = pop(stack);
+        stack_item *s_operator = popItem;
+        int operator_type = s_operator->token->type;
+        popItem = pop(stack);
+        stack_item *left_operand = popItem;
+    
+        int operand_type = right_operand->token->type;
+
+        void *tmp_left = left_operand;
+        void *tmp_right = right_operand;
+        void *tmp_operator = s_operator;
+    
+        if (left_operand->token->value == right_operand->token->type)
+        {
+            same_types = true;
+        }
+        if (!same_types)
+        {
+            exit(5); //semantic type error
+        }
+        
+        switch (operator_type)
+        {
+        //E -> E+E
+        case add:
+            if (operand_type == integer || operand_type == ddouble)
+            {
+                //aritmethic + gen - typ operátoru, operand, operand
+            }
+            else if (operand_type == string){
+                //concat gen
+            }
+            else
+            {
+                exit(5); //semantic type error
+            }
+            break;
+
+        //E -> E-E
+        case sub:
+            if (operand_type == integer || operand_type == ddouble)
+            {
+                //aritmethic - gen - typ operátoru, operand, operand
+            }
+            else {
+                exit(5); //semantic type error
+            }
+            break;
+        
+        //E -> E*E
+        case mul:
+            if (operand_type == integer || operand_type == ddouble)
+            {
+                //aritmethic * gen - typ operátoru, operand, operand
+            }
+            else
+            {
+                exit(5); //semantic type error
+            }
+            break;
+            
+        //E -> E/E
+        case t_div:
+            if (operand_type == integer || operand_type == ddouble)
+            {
+                //aritmethic / gen - typ operátoru, operand, operand
+            }
+            else
+            {
+                exit(5); //semantic type error
+            }
+            break;
+
+        //E -> E log E
+        case operator:
+            char* logical = token->value->str;
+
+            if (logical == "==")
+            {
+                //logical == gen
+            }
+            else if (logical == '~=')
+            {
+                //logical ~= gen
+            }
+            else if (logical == ">")
+            {
+                //logical > gen
+            }
+            else if (logical == "<")
+            {
+                //logical < gen
+            }
+            else if (logical == "")
+            {
+                //todo
+            }
+            break;
+        default:
+            exit(2);
+        }
+        stopITemp = pop(stack);
+        if (!popITemp)
+        {
+            free(popITemp);
+            popITemp = NULL;
+        }
+
+        stack_item *value = malloc(sizeof(stack_item));
+        value->token = right_operand->token;
+        value->type = NON_TERM;
+
+        stack_push(stack, value);
+        return;
     }
 }
