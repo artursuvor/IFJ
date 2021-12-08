@@ -23,5 +23,6 @@ bool isSlash(char x);
 bool isEOF(char x);
 void skipLineComment();
 void skipBlockComment();
+bool isLine(char x);
 
 #endif //IFJ_BASICFUNCTIONS_H
