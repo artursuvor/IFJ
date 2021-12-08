@@ -4,10 +4,10 @@
 #include <stdbool.h>
 #include <string.h>
 
-typedef int* symtable_value_t;
 
-// uzel stromu
-                                                                                                            
+
+typedef int* symtable_value_t;
+                                                                                             
 typedef struct symtable_node {
 	char *key;
 	symtable_value_t value;
@@ -17,6 +17,8 @@ typedef struct symtable_node {
 
 symtable_node_t *symtable_init();
 
-bool symtable_search(symtable_node_t *root_pointer, char *key, symtable_value_t content);
+bool symtable_search(symtable_node_t *root_pointer, char *key, symtable_value_t value);
 
-void symtable_insert(symtable_node_t **root_pointer, char *key, symtable_value_t content);
+void symtable_insert(symtable_node_t **root_pointer, char *key, symtable_value_t value);
+
+symtable_value_t get_symtable_value(symtable_node_t *root_pointer, char *key, symtable_value_t value);
