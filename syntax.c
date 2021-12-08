@@ -3,7 +3,7 @@
 
 #include "scanner.h"
 #include "symtable.h"
-#include "list.h"
+// #include "list.h"
 #include "scanner.c"
 #include "syntax.h"
 #include "dynArr.h"
@@ -63,6 +63,7 @@ void check_identifier(dynStr name ) {
 
 	arrayInsert(main_list, next_token);
 
+	symtable_value_t value;
 	switch (next_token.type)
 	{
 		case t_EOL:
@@ -74,8 +75,7 @@ void check_identifier(dynStr name ) {
 			check_function_def(FUNCTION_START);
 			break;
 		case left_bracket:
-
-			symtable_value_t value = malloc(sizeof(int));
+			value = malloc(sizeof(int));
 			value = get_symtable_value(table, next_token.value, value);
 			int *parameters_count = *value;
 			built_in_function_call_check(parameters_count);
@@ -100,15 +100,16 @@ void check_identifier(dynStr name ) {
 
 
 void process_nested_commands(int option) {
+	token t;
+	int k;
 	switch (option) {
 		case RETURN_EXPECTING:
-			token t;
 			while (!(t.type == keyword && strcmp(t.value, "return")==0));
 			{
 				global_dynamic_array_position+=1;
 				t = get_next_token(incoming_list, global_dynamic_array_position);
 				arrayInsert(main_list, t);
-
+				token another_token;
 				switch (t.type)
 				{
 					case id:
@@ -117,7 +118,7 @@ void process_nested_commands(int option) {
 					case t_EOL:
 						break;
 					case keyword:
-						int k = process_keyword(t);
+						k = process_keyword(t);
 						if(k == IF_KEYWORD) {
 							check_if_statement(BASIC_IF);
 						}
@@ -179,7 +180,6 @@ void process_nested_commands(int option) {
 					case integer:
 					case ddouble:
 					case string:
-						token another_token;
 							global_dynamic_array_position+=1;
 							another_token = get_next_token(incoming_list, global_dynamic_array_position);
 							arrayInsert(main_list, another_token);
@@ -212,14 +212,14 @@ void process_nested_commands(int option) {
 }
 
 void check_function_def(int option) {
-
+		symtable_value_t param_cnt;
+			token next_token;
 	switch(option) {
 		case FUNCTION_START:
-			token next_token;
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			arrayInsert(main_list, next_token);
-
+			token t;
 			switch(next_token.type) {
 				case t_EOF:
 					printf("EOF error");
@@ -228,7 +228,6 @@ void check_function_def(int option) {
 					printf("EOL error");
 					break;
 				case id:
-					symtable_value_t param_cnt;
 					param_cnt = my_malloc(sizeof(int));
 					*param_cnt = 0;
 					token t;
@@ -254,7 +253,6 @@ void check_function_def(int option) {
 					case integer:
 					case ddouble:
 					case string:
-						token t;
 						global_dynamic_array_position+=1;
 						t = get_next_token(incoming_list, global_dynamic_array_position);
 						arrayInsert(main_list, t);
@@ -270,7 +268,6 @@ void check_function_def(int option) {
 			process_nested_commands(RETURN_EXPECTING);
 		break;
 		case END_EXPECTING:
-			token t;
 			global_dynamic_array_position+=1;
 			t = get_next_token(incoming_list, global_dynamic_array_position);
 			arrayInsert(main_list, t);
@@ -302,13 +299,13 @@ void check_basic_bool_expression() {
 	global_dynamic_array_position+=1;
 	next_token = get_next_token(incoming_list, global_dynamic_array_position);
 	arrayInsert(main_list, next_token);
+	token another_token;
 
 	switch(next_token.type) {
 		case id:
 		case integer:
 		case ddouble:
 		case string:
-			token another_token;
 			global_dynamic_array_position+=1;
 			another_token = get_next_token(incoming_list, global_dynamic_array_position);
 			arrayInsert(main_list, another_token);
@@ -329,6 +326,7 @@ void check_basic_bool_expression() {
 
 int check_if_statement(int mode) {
 	
+						token another_token;
 	switch (mode)
 	{
 		case BASIC_IF:
@@ -338,13 +336,12 @@ int check_if_statement(int mode) {
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			arrayInsert(main_list, next_token);
-
+			int k = 0;
 
 			switch(next_token.type) {
 				case keyword:
-				int k = process_keyword(next_token);
+				k  = process_keyword(next_token);
 					if (k == THEN_KEYWORD) {
-						token another_token;
 						global_dynamic_array_position+=1;
 						another_token = get_next_token(incoming_list, global_dynamic_array_position);
 						if(another_token.type != t_EOL) {
@@ -365,7 +362,7 @@ int check_if_statement(int mode) {
 			}
 
 		case EXPECTING_ELSE_OR_END:
-			token next_token;
+			// token next_token;
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			if (next_token.type != t_EOL) {
@@ -375,7 +372,6 @@ int check_if_statement(int mode) {
 			break;
 		
 		case EXPECTING_END:
-			token next_token;
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			if (next_token.type != t_EOL) {
@@ -398,16 +394,15 @@ void check_while_statement(int mode) {
 	switch (mode) {
 		case BASIC_WHILE:
 			check_basic_bool_expression();
-
+			int k =0;	
 			token next_token;
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			arrayInsert(main_list, next_token);
 
-
 			switch(next_token.type) {
 				case keyword:
-				int k = process_keyword(next_token);
+				k = process_keyword(next_token);
 					if (k == DO_KEYWORD) {
 						token another_token;
 						global_dynamic_array_position+=1;
@@ -430,7 +425,6 @@ void check_while_statement(int mode) {
 			}
 		break;
 		case EXPECTING_END:
-			token next_token;
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			if (next_token.type != t_EOL) {
@@ -640,11 +634,11 @@ void check_aritmetic_expression(int option) {
 		next_token = get_next_token(incoming_list, global_dynamic_array_position);
 		arrayInsert(main_list, next_token);
 
+		token another_token;
 		switch(next_token.type) {
 			case right_bracket:
 				break;
 			case id:
-				token another_token;
 				global_dynamic_array_position+=1;
 				another_token = get_next_token(incoming_list, global_dynamic_array_position);
 				arrayInsert(main_list, another_token);
@@ -665,7 +659,6 @@ void check_aritmetic_expression(int option) {
 			case mul:
 			case ddiv:
 			case left_bracket:
-				token another_token;
 				global_dynamic_array_position+=1;
 				another_token = get_next_token(incoming_list, global_dynamic_array_position);
 				arrayInsert(main_list, another_token);
