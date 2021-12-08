@@ -2,7 +2,8 @@
 // Created by Novák on 01.11.2021.
 //
 
-#include "dynStr.h"
+
+#include "header_test.h"
 
 #define DYNSTR_LEN 8
 

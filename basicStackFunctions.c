@@ -10,7 +10,7 @@
 */
 
 
-#include "basicStackFunctions.h"
+#include "header_test.h"
 
 TStack* initStack(){
     TStack* stack = (TStack*)malloc(sizeof(TStack));   
@@ -18,9 +18,9 @@ TStack* initStack(){
     return stack;
 }
 
-/*int isFull(TStack *s){
-    return s->top == s->capacity - 1;
-}*/
+int isFull(TStack *s){
+    return s->top == MAX_STACK;
+}
 
 int isEmpty(TStack *s){
     return s->top == -1;
@@ -33,7 +33,7 @@ void stack_push(TStack *s, stack_item *item){
 }
 
 void insert_start(TStack *s, int term_index){
-    push(s, NULL);
+    stack_push(s, NULL);
 
     //array shift    
     for (int i = (top_index(s) -1); i >= term_index; i--)
@@ -46,10 +46,10 @@ void insert_start(TStack *s, int term_index){
     s->data[term_index] = start_item;    
 }
 
-stack_item pop(TStack *s){
+stack_item *pop(TStack *s){
     if (isEmpty(s))
         return;
-    return *s->data[s->top--];
+    return s->data[s->top--];
 }
 
 stack_item* top_item(TStack *s){

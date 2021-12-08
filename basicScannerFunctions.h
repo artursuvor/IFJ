@@ -4,7 +4,7 @@
 
 #ifndef IFJ_BASICFUNCTIONS_H
 #define IFJ_BASICFUNCTIONS_H
-#include "dynStr.h"
+#include "header_test.h"
 
 bool isLetterUnder(char x);
 bool isLetterUnderNumber(char x);

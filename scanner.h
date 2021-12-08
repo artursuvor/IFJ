@@ -2,10 +2,14 @@
 // Created by Lakluk on 26.10.2021.
 //
 
+//struktura tokenu
+
 #ifndef IFJ_SCANNER_H
 #define IFJ_SCANNER_H
-//struktura tokenu
+
+#include "dynArr.h"
 #include "dynStr.h"
+
 
 
 enum tokenType {keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_EOF, t_EOL, equal, add, sub, mul, t_div};
@@ -15,10 +19,6 @@ typedef struct{
     dynStr *value;
 } token_t;
 
-#include "dynArr.c"
-#include "dynStr.c"
-
-enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_EOF, equal, add, sub, mul, div, new_line};
 
 char Word(char x, dynArr *a); //done
 char Number(char x, dynArr *a); //done
@@ -35,4 +35,5 @@ char Operator2(char x, char y, dynArr *a); //done
 void debug(dynArr *a); //NovákDebug
 void printToken(token_t tok);
 void newLineToken(dynArr *a);
+
 #endif //IFJ_SCANNER_H

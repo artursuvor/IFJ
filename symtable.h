@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-
-
 typedef int* symtable_value_t;
                                                                                              
 typedef struct symtable_node {

@@ -3,7 +3,7 @@
 //       Lukáš Fuis   - xfuisl00
 //       Dušan Čičmiš - xcicmi00
 
-#include "precedence.h"
+#include "header_test.h"
 
 //                      stack      enter
 char precedence_table[PREC_SIZE][PREC_SIZE] =
@@ -33,7 +33,7 @@ precedence_table_i token_type_to_symbol(token_t *token, TStack *stack)
         return PLUS_MINUS;
     case mul:
     case t_div:
-        MUL_DIV;
+        return MUL_DIV;
     case left_bracket:
         return L_BRACKET;
     case right_bracket:
@@ -64,7 +64,7 @@ void precedence_analysis(dynArr *token_array){
     }
     dollarToken->type = t_EOF;
     dollar->token = dollarToken;
-    push(stack, dollarToken);
+    stack_push(stack, dollarToken);
 
     precedence_table_i *currentTokenIndex;
     precedence_table_i topTableIndex;
@@ -74,8 +74,8 @@ void precedence_analysis(dynArr *token_array){
     
     while (!done)
     {
-        *token = get_next_token(token_array, position);
-        currentTokenIndex = token_type_to_symbol(token, stack);
+        *token = get_next_token(token_array, *position);
+        *currentTokenIndex = token_type_to_symbol(token, stack);
 
         topTableItem = top_item(stack);
         topTableIndex = topTableItem->type;
@@ -102,8 +102,8 @@ void precedence_analysis(dynArr *token_array){
     return;
 }
 
-token_t get_next_token(dynArr *array, int position){
-    token_t retVal = array->array[position];
+token_t get_next_token(dynArr *array, int *position){
+    token_t retVal = array->array[*position];
     position++;
     return retVal;
 }
@@ -117,7 +117,7 @@ void shift_operation(token_t *token, precedence_table_i *currentTokenIndex, TSta
     
     tmp->type = TERM;
     tmp->token = token;
-    push(stack, tmp);
+    stack_push(stack, tmp);
 }
 
 void shift_stop_operation(token_t *token, precedence_table_i *currentTokenIndex, TStack *stack){  // <
@@ -131,15 +131,16 @@ void shift_stop_operation(token_t *token, precedence_table_i *currentTokenIndex,
     }
     tmp->token = token;
     tmp->type = TERM;
-    push(stack, tmp);
+    stack_push(stack, tmp);
 }
 
 void reduce_operation(token_t *token, precedence_table_i *currentTokenIndex, TStack *stack){ // <
     stack_item *popItem = pop(stack);
     stack_item *tmp;
 
-    void *stopITemp;
-    void *popITemp = popItem;
+    stack_item *stopITemp;
+    stack_item *popITemp = popItem;
+    char* logical;
 
     if (popItem->type == TERM)
     {
@@ -271,83 +272,83 @@ void reduce_operation(token_t *token, precedence_table_i *currentTokenIndex, TSt
         
         switch (operator_type)
         {
-        //E -> E+E
-        case add:
-            if (operand_type == integer || operand_type == ddouble)
-            {
-                //aritmethic + gen - typ operátoru, operand, operand
-            }
-            else if (operand_type == string){
-                //concat gen
-            }
-            else
-            {
-                exit(5); //semantic type error
-            }
-            break;
+            //E -> E+E
+            case add:
+                if (operand_type == integer || operand_type == ddouble)
+                {
+                    //aritmethic + gen - typ operátoru, operand, operand
+                }
+                else if (operand_type == string){
+                    //concat gen
+                }
+                else
+                {
+                    exit(5); //semantic type error
+                }
+                break;
 
-        //E -> E-E
-        case sub:
-            if (operand_type == integer || operand_type == ddouble)
-            {
-                //aritmethic - gen - typ operátoru, operand, operand
-            }
-            else {
-                exit(5); //semantic type error
-            }
-            break;
-        
-        //E -> E*E
-        case mul:
-            if (operand_type == integer || operand_type == ddouble)
-            {
-                //aritmethic * gen - typ operátoru, operand, operand
-            }
-            else
-            {
-                exit(5); //semantic type error
-            }
-            break;
+            //E -> E-E
+            case sub:
+                if (operand_type == integer || operand_type == ddouble)
+                {
+                    //aritmethic - gen - typ operátoru, operand, operand
+                }
+                else {
+                    exit(5); //semantic type error
+                }
+                break;
             
-        //E -> E/E
-        case t_div:
-            if (operand_type == integer || operand_type == ddouble)
-            {
-                //aritmethic / gen - typ operátoru, operand, operand
-            }
-            else
-            {
-                exit(5); //semantic type error
-            }
-            break;
+            //E -> E*E
+            case mul:
+                if (operand_type == integer || operand_type == ddouble)
+                {
+                    //aritmethic * gen - typ operátoru, operand, operand
+                }
+                else
+                {
+                    exit(5); //semantic type error
+                }
+                break;
+                
+            //E -> E/E
+            case t_div:
+                if (operand_type == integer || operand_type == ddouble)
+                {
+                    //aritmethic / gen - typ operátoru, operand, operand
+                }
+                else
+                {
+                    exit(5); //semantic type error
+                }
+                break;
 
-        //E -> E log E
-        case operator:
-            char* logical = token->value->str;
+            //E -> E log E
+            case operator:
+                *logical = token->value->str;
 
-            if (logical == "==")
-            {
-                //logical == gen
-            }
-            else if (logical == '~=')
-            {
-                //logical ~= gen
-            }
-            else if (logical == ">")
-            {
-                //logical > gen
-            }
-            else if (logical == "<")
-            {
-                //logical < gen
-            }
-            else if (logical == "")
-            {
-                //todo
-            }
-            break;
-        default:
-            exit(2);
+                if (logical == "==")
+                {
+                    //logical == gen
+                }
+                else if (logical == '~=')
+                {
+                    //logical ~= gen
+                }
+                else if (logical == ">")
+                {
+                    //logical > gen
+                }
+                else if (logical == "<")
+                {
+                    //logical < gen
+                }
+                else if (logical == "")
+                {
+                    //todo
+                }
+                break;
+            default:
+                exit(2);
         }
         stopITemp = pop(stack);
         if (!popITemp)

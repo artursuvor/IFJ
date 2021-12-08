@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "scanner.h"
-#include "symtable.h"
-#include "scanner.c"
-#include "syntax.h"
-#include "dynArr.h"
+#include "header_test.h"
 
 
 #define IF_KEYWORD 201
@@ -80,7 +73,7 @@ void check_identifier(char* name ) {
 			value = malloc(sizeof(int));
 			*value = get_symtable_value(table, next_token.value, value);
 			int *parameters_count = value;
-			built_in_function_call_check(parameters_count);
+			//built_in_function_call_check(parameters_count);
 			break;
 		case equal:
 			check_assign(0);
@@ -572,7 +565,7 @@ void check_assign(int operands_count) {
 					process_left_bracket();
 				case keyword:
 					if(strcmp(t.value->str, "function") == 0) {
-						built_in_function_call_check(0);
+						//built_in_function_call_check(0);
 					}
 					else if(strcmp(t.value->str, "nil") == 0){
 						check_assign(operands_count--);

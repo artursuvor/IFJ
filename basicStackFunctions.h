@@ -36,4 +36,4 @@ int top_index(TStack *s);
 
 int term_index(TStack *s);
 
-void free_stack(TStack *s)
+void free_stack(TStack *s);

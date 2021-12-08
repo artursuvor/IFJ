@@ -5,7 +5,8 @@
 * Novák Matěj <xnovak2q@stud.fit.vutbr.cz>
 */
 
-#include "dynArr.h"
+
+#include "header_test.h"
 
 int arrayInit(dynArr *array){
     array->array = malloc(sizeof(token_t));
@@ -32,3 +33,4 @@ void freeArray(dynArr *array){
     array->used = 0;
     array->size = 0;
     return;
+}

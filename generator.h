@@ -19,21 +19,21 @@
 void start();
 void clears();
 void defvar();
-void call(token tok);
-void move(token src, token dst, bool in_function, bool is_const);
-void f_begin(token tok);
+void call(token_t tok);
+void move(token_t src, token_t dst, bool in_function, bool is_const);
+void f_begin(token_t tok);
 void f_end();
 void ifjcode_main();
-void concat(token tok1, token tok2, bool in_function);
-void arithmetic_operation(token t_type, token tok1, token tok2, bool in_function);
-void relational_operation(token t_type, token tok1, token tok2, bool in_function);
+void concat(token_t tok1, token_t tok2, bool in_function);
+void arithmetic_operation(token_t t_type, token_t tok1, token_t tok2, bool in_function);
+void relational_operation(token_t t_type, token_t tok1, token_t tok2, bool in_function);
 
 // if start 
-void if_begin(token label, token result, bool in_function);
+void if_begin(token_t label, token_t result, bool in_function);
 // else
-void else_label(token label);  
+void else_label(token_t label);  
 // if end
-void if_end(token label);
+void if_end(token_t label);
 // print
-void ifjcode_write(token tok, bool in_function, bool is_const);
+void ifjcode_write(token_t tok, bool in_function, bool is_const);
    

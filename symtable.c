@@ -1,4 +1,4 @@
-#include "symtable.h"
+#include "header_test.h"
 
 symtable_node_t *symtable_init()
 {
@@ -40,8 +40,8 @@ void symtable_insert(symtable_node_t **root_pointer, char *key, symtable_value_t
 {		
 	if (*root_pointer == NULL)
 	{
-		(*root_pointer) = my_malloc(sizeof(symtable_node_t));		
-		(*root_pointer)->key = my_malloc(strlen(key) * sizeof(char) + 1);
+		(*root_pointer) = malloc(sizeof(symtable_node_t));		
+		(*root_pointer)->key = malloc(strlen(key) * sizeof(char) + 1);
 		strcpy((*root_pointer)->key,key);
 		(*root_pointer)->value=value;
 		(*root_pointer)->lptr = NULL;

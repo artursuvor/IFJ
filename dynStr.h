@@ -5,16 +5,19 @@
 #ifndef IFJ_DYNSTR_H
 #define IFJ_DYNSTR_H
 
+#include "dynArr.h"
+#include "scanner.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+
+
 typedef struct {
     char *str;
     int len;
     int all_len;
 } dynStr;
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include "scanner.h"
 
 
 

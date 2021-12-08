@@ -4,8 +4,13 @@
 *
 * Novák Matěj <xnovak2q@stud.fit.vutbr.cz>
 */
+
 #ifndef IFJ_DYNARR_H
 #define IFJ_DYNARR_H
+
+#include "dynStr.h"
+#include "scanner.h"
+
 
 typedef struct
 {
@@ -13,8 +18,6 @@ typedef struct
     int used;
     int size;
 } dynArr;
-
-#include "scanner.h"
 
 
 //základní inicializace dynamického pole
@@ -26,4 +29,4 @@ void arrayInsert(dynArr *array, token_t token);
 //uvolnění paměti po použití pole
 void freeArray(dynArr *array);
 
-#endif
+#endif //IFJ_DYNARR_H

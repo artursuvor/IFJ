@@ -12,7 +12,6 @@
 
 #include "scanner.h"
 #include "symtable.h"
-// #include "list.h"
 #include "syntax.h"
 #include "basicStackFunctions.h"
 
@@ -52,7 +51,7 @@ void shift_operation(token_t token, precedence_table_i *currentTokenIndex, TStac
 
 void shift_stop_operation(token_t token, precedence_table_i *currentTokenIndex, TStack *stack);
 
-token_t get_next_token(dynArr *array, int position);
+token_t get_next_token(dynArr *array, int *position);
 
 void reduce_operation(token_t token, precedence_table_i *currentTokenIndex, TStack *stack);
 

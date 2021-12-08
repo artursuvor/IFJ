@@ -2,12 +2,7 @@
 // Created by Lakluk on 26.10.2021.
 //
 
-#include<stdlib.h>
-#include<stdio.h>
-#include<stdbool.h>
-#include <string.h>
-#include <ctype.h>
-#include "basicScannerFunctions.h"
+#include "header_test.h"
 
 const char *keywords[] = {
 "do", "else", "end", "function", "global", "if", "integer", "local", "nil", "number", "require", "return", "string", "then", "while"

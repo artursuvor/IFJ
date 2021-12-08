@@ -2,15 +2,8 @@
 // Created by Lakluk on 22.10.2021.
 //
 
-#include<stdlib.h>
-#include<stdio.h>
-#include<stdbool.h>
-#include<string.h>
-#include <ctype.h>
-#include "basicScannerFunctions.c"
-#include "scanner.h"
-
 // Stavy automatu
+
 
 #define START_STATE 100
 #define END_STATE 199
@@ -22,6 +15,10 @@
 #define STATE_IS_E 155
 #define STATE_IS_OPERATOR 160
 #define STATE_EOL 198
+
+
+#include "header_test.h"
+
 
 
 int Error = 0;
