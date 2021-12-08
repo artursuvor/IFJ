@@ -18,12 +18,6 @@ void start(){
 }
 
 
-void clears(){
-    printf(stdout, "POPFRAME\n");
-    printf(stdout, "CLEARS\n");
-}
-
-
 void defvar(token tok, bool in_function){
     in_function ? printf("DEFVAR LF@%s\n", tok.value) : printf("DEFVAR GF@%s\n", tok.value);         
 }
@@ -33,6 +27,12 @@ void call(token tok){
     printf("CREATEFRAME\n");   
     printf("CALL *%s\n", tok.value);
     //maybe push return value to the stack
+}
+
+
+void clears(){
+    printf(stdout, "POPFRAME\n");
+    printf(stdout, "CLEARS\n");
 }
 
 
@@ -99,64 +99,59 @@ void arithmetic_operation(token t_type, token tok1, token tok2, bool in_function
 
 
 //Generovani relacnich operatoru
-void relational_operation(token t_type, token tok1, token tok2, bool in_function){
-    switch(t_type.type){
-        // ==
-        case "TODO": 
-            in_function ? printf("EQ LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value) : printf("EQ GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
-            break;
+void relational_operation(token t_type, token tok1, token tok2, bool in_function){    
+    char* operator;
+    operator = t_type.value->str;
+    
+    // ==
+    if (strcmp(operator, "=="))
+        in_function ? printf("EQ LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value) : printf("EQ GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
 
-        // !=    
-        case "TODO":       
-            if(in_function){          
-                    printf("EQ  LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value);
-                    printf("NOT  LF@%s LF@%s\n", tok1.value, tok1.value);
-            }
+    // != 
+    else if (strcmp(operator, "!=")){
+        if(in_function){          
+            printf("EQ  LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value);
+            printf("NOT  LF@%s LF@%s\n", tok1.value, tok1.value);
+        }                     
+        
+        else{   
+            printf("EQ  GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
+            printf("NOT  GF@%s GF@%s\n", tok1.value, tok1.value);   
+        }
+    }              
+
+    // <
+    else if (strcmp(operator, "<"))
+        in_function ? printf("LT LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value) : printf("LT GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
             
-            else{   
-                    printf("EQ  GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
-                    printf("NOT  GF@%s GF@%s\n", tok1.value, tok1.value);   
-            }
-            break;   
+    // >
+    else if (strcmp(operator, ">"))
+        in_function ? printf("GT LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value) : printf("GT GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
+                    
+    // <=
+    else if (strcmp(operator, "<=")){ 
+        if(in_function){          
+                printf(stdout,"GT  LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value);
+                printf(stdout,"NOT  LF@%s LF@%s\n", tok1.value, tok1.value);               
+        }
 
-        // <
-        case "TODO": 
-            in_function ? printf("LT LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value) : printf("LT GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
-            break;            
-          
-        // >
-        case "TODO": 
-            in_function ? printf("GT LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value) : printf("GT GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
-            break;
-            
-        // <=
-        case "TODO": 
-            if(in_function){          
-                    printf(stdout,"GT  LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value);
-                    printf(stdout,"NOT  LF@%s LF@%s\n", tok1.value, tok1.value);               
-            }
+        else{             
+                printf(stdout,"GT  GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
+                printf(stdout,"NOT  GF@%s GF@%s\n", tok1.value, tok1.value); 
+        }    
+    }     
+        
+    // >=
+    else if (strcmp(operator, ">=")){ 
+        if(in_function){          
+                printf(stdout,"LT  LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value);
+                printf(stdout,"NOT  LF@%s LF@%s\n", tok1.value, tok1.value);               
+        }
 
-            else{             
-                    printf(stdout,"GT  GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
-                    printf(stdout,"NOT  GF@%s GF@%s\n", tok1.value, tok1.value); 
-            }          
-            break;
-
-        // >=
-        case "TODO": 
-            if(in_function){          
-                    printf(stdout,"LT  LF@%s LF@%s LF@%s\n", tok1.value, tok1.value, tok2.value);
-                    printf(stdout,"NOT  LF@%s LF@%s\n", tok1.value, tok1.value);               
-            }
-
-            else{             
-                    printf(stdout,"LT  GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
-                    printf(stdout,"NOT  GF@%s GF@%s\n", tok1.value, tok1.value); 
-            }          
-            break;     
-
-        default:
-            break;
+        else{             
+                printf(stdout,"LT  GF@%s GF@%s GF@%s\n", tok1.value, tok1.value, tok2.value);
+                printf(stdout,"NOT  GF@%s GF@%s\n", tok1.value, tok1.value); 
+        }                     
     }
 }
 

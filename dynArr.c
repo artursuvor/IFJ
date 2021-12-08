@@ -7,29 +7,28 @@
 
 #include "dynArr.h"
 
-int arrayInit(dynArr *a){
-    a->array = malloc(sizeof(token));
-    if(!a->array){
-        return 1; //ošetření mallocu
+int arrayInit(dynArr *array){
+    array->array = malloc(sizeof(token_t));
+    if(!array->array){
+        exit(99); //ošetření mallocu
     }
-    a->size = 1;
-    a->used = 0;
+    array->size = 1;
+    array->used = 0;
     return 0;
 }
 
-void arrayInsert(dynArr *a, token tok){
-    if(a->used >= a->size){
-        a->size *= 2;
-        a->array = realloc(a->array, a->size * sizeof(token));
+void arrayInsert(dynArr *array, token_t token){
+    if(array->used >= array->size){
+        array->size *= 2;
+        array->array = realloc(array->array, array->size * sizeof(token_t));
     }
-    a->array[a->used++] = tok;
+    array->array[array->used++] = token;
     return;
 }
 
-void freeArray(dynArr *a){
-    free(a->array);
-    a->array = NULL;
-    a->used = 0;
-    a->size = 0;
+void freeArray(dynArr *array){
+    free(array->array);
+    array->array = NULL;
+    array->used = 0;
+    array->size = 0;
     return;
-}
