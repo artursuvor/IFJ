@@ -3,7 +3,6 @@
 
 #include "scanner.h"
 #include "symtable.h"
-// #include "list.h"
 #include "scanner.c"
 #include "syntax.h"
 #include "dynArr.h"
@@ -49,15 +48,18 @@ symtable_node_t *table;
 dynArr *incoming_list;
 
 dynArr *main_list;
-arrayInit(main_list);
 int global_dynamic_array_position = 0;
 
 /*
 	Funkce zkontroluje kod po tom co dostane identifikator.
 */
 
-void check_identifier(dynStr name ) {
-	token next_token;
+void check_identifier(char* name ) {
+	token_t next_token;
+
+	token_t current_token;
+	current_token = get_next_token(incoming_list, global_dynamic_array_position);
+
 	global_dynamic_array_position+=1;
 	next_token = get_next_token(incoming_list, global_dynamic_array_position);
 
@@ -76,8 +78,8 @@ void check_identifier(dynStr name ) {
 			break;
 		case left_bracket:
 			value = malloc(sizeof(int));
-			value = get_symtable_value(table, next_token.value, value);
-			int *parameters_count = *value;
+			*value = get_symtable_value(table, next_token.value, value);
+			int *parameters_count = value;
 			built_in_function_call_check(parameters_count);
 			break;
 		case equal:
@@ -86,7 +88,7 @@ void check_identifier(dynStr name ) {
 		case add:
 		case sub:
 		case mul:
-		case ddiv:
+		case t_div:
 			check_aritmetic_expression(NO_BRACKET);
 			break;
 		case keyword:
@@ -94,26 +96,35 @@ void check_identifier(dynStr name ) {
 				check_function_declaration(name);
 			}
 		default:
-			printf("id check error");
+			exit(2);
+	}
+
+	int *prmtr = malloc(sizeof(int));
+	if(!prmtr) {
+		exit(99);
+	}
+	*prmtr = 1;
+	if(symtable_search(table, current_token.value, prmtr) == false) {
+		symtable_insert(&table, current_token.value, 0);
 	}
 }
 
 
 void process_nested_commands(int option) {
-	token t;
+	token_t t;
 	int k;
 	switch (option) {
 		case RETURN_EXPECTING:
-			while (!(t.type == keyword && strcmp(t.value, "return")==0));
+			while (!(t.type == keyword && strcmp(t.value->str, "return")==0));
 			{
 				global_dynamic_array_position+=1;
 				t = get_next_token(incoming_list, global_dynamic_array_position);
 				arrayInsert(main_list, t);
-				token another_token;
+				token_t another_token;
 				switch (t.type)
 				{
 					case id:
-						check_identifier(*t.value);
+						check_identifier(t.value->str);
 						break;
 					case t_EOL:
 						break;
@@ -125,8 +136,8 @@ void process_nested_commands(int option) {
 						else if (k == WHILE_KEYWORD) {
 							check_while_statement(BASIC_WHILE);
 						}
-						else if (strcmp(t.value, "nil") == 0) {
-							token another_token;
+						else if (strcmp(t.value->str, "nil") == 0) {
+							token_t another_token;
 							global_dynamic_array_position+=1;
 							another_token = get_next_token(incoming_list, global_dynamic_array_position);
 							arrayInsert(main_list, another_token);
@@ -134,16 +145,16 @@ void process_nested_commands(int option) {
 							switch(another_token.type) {
 								case add:
 								case sub:
-								case ddiv:
+								case t_div:
 								case mul:
 									check_aritmetic_expression(NO_BRACKET);
 								case t_EOL:
 									break;
 								case t_EOF:
-									printf("unexpected EOF");
+									exit(2); //Necekany EOF
 									break;
 								default:
-									printf("SYNtax error!");
+									exit(2);
 								break;
 							}
 						}
@@ -151,7 +162,7 @@ void process_nested_commands(int option) {
 							break;
 						}
 						else {
-							printf("Syntax error unknown keyword!");
+							exit(2); // Neznamy keyword!
 						}
 						break;
 					
@@ -165,9 +176,8 @@ void process_nested_commands(int option) {
 					// case tkn_key_ord:
 					// case tkn_key_chr:
 					// t = get_next_token();
-					// list_insert_last(global_list, t);
 					// if (t.type == tkn_end_of_file)
-					// 	syntax_error("unexpected EOF");
+					// 	exit(2);
 					// else if (t.type == tkn_left_bracket)
 					// 	call_func(RBRACKET);
 					// else if (t.type == tkn_identifier || t.type == tkn_integer || t.type == tkn_key_nil || t.type == tkn_string || t.type == tkn_double)
@@ -175,7 +185,7 @@ void process_nested_commands(int option) {
 					// else if (t.type == tkn_new_line)
 					// 	break;
 					// else
-					// 	syntax_error("wrong parametrs of builtin function");
+					// 	exit(2);
 						// break;
 					case integer:
 					case ddouble:
@@ -187,21 +197,21 @@ void process_nested_commands(int option) {
 							switch(another_token.type) {
 								case add:
 								case sub:
-								case ddiv:
+								case t_div:
 								case mul:
 									check_aritmetic_expression(NO_BRACKET);
 								case t_EOL:
 									break;
 								case t_EOF:
-									printf("unexpected EOF");
+									exit(2);
 									break;
 								default:
-									printf("SYNtax error!");
+									exit(2);
 								break;
 							}
 
 					default:
-						syntax_error("expected return keyword");
+						exit(2);
 						break;
 					}
 		}
@@ -213,30 +223,30 @@ void process_nested_commands(int option) {
 
 void check_function_def(int option) {
 		symtable_value_t param_cnt;
-			token next_token;
+			token_t next_token;
 	switch(option) {
 		case FUNCTION_START:
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			arrayInsert(main_list, next_token);
-			token t;
+			token_t t;
 			switch(next_token.type) {
 				case t_EOF:
-					printf("EOF error");
+					exit(2);
 					break;
 				case t_EOL:
-					printf("EOL error");
+					exit(2);
 					break;
 				case id:
-					param_cnt = my_malloc(sizeof(int));
+					param_cnt = malloc(sizeof(int));
 					*param_cnt = 0;
-					token t;
+					token_t t;
 					global_dynamic_array_position+=1;
 					t = get_next_token(incoming_list, global_dynamic_array_position);
 
 					arrayInsert(main_list, t);
 					if (t.type != left_bracket){
-					printf("expected '('");
+					exit(2); // Ocekava se '('
 					}
 					global_dynamic_array_position+=1;
 					t = get_next_token(incoming_list, global_dynamic_array_position);
@@ -257,11 +267,11 @@ void check_function_def(int option) {
 						t = get_next_token(incoming_list, global_dynamic_array_position);
 						arrayInsert(main_list, t);
 						if (t.type != t_EOL) {
-							printf("Expecting EOL after function header");
+							exit(2); //Ocekava se EOL po function header
 						}
 						check_function_def(RETURN_EXPECTING);
 				default:
-					printf("Function def error!");
+					exit(2); //Chyba Function def!"
 			}
 		break;
 		case RETURN_EXPECTING:
@@ -271,16 +281,16 @@ void check_function_def(int option) {
 			global_dynamic_array_position+=1;
 			t = get_next_token(incoming_list, global_dynamic_array_position);
 			arrayInsert(main_list, t);
-			if (t.type == keyword && strcmp(t.value, "end") == 0) {
+			if (t.type == keyword && strcmp(t.value->str, "end") == 0) {
 				global_dynamic_array_position+=1;
 				t = get_next_token(incoming_list, global_dynamic_array_position);
 				arrayInsert(main_list, t);
 				if (t.type != t_EOL) {
-					printf("Syntax error! EOL expecting!");
+					exit(2); // EOL se ocekava
 				}
 			}
 			else {
-				printf("Syntax error, end expecting");
+				exit(2); //  end se ocekava
 			}
 			break;
 		default:
@@ -295,11 +305,11 @@ void check_function_def(int option) {
 
 
 void check_basic_bool_expression() {
-	token next_token;
+	token_t next_token;
 	global_dynamic_array_position+=1;
 	next_token = get_next_token(incoming_list, global_dynamic_array_position);
 	arrayInsert(main_list, next_token);
-	token another_token;
+	token_t another_token;
 
 	switch(next_token.type) {
 		case id:
@@ -314,7 +324,7 @@ void check_basic_bool_expression() {
 				case operator:
 					check_basic_bool_expression();
 				default:
-					printf("Basic bool expression error! \n");
+					exit(2);
 			}
 	}
 }
@@ -326,13 +336,13 @@ void check_basic_bool_expression() {
 
 int check_if_statement(int mode) {
 	
-						token another_token;
+	token_t another_token;
 	switch (mode)
 	{
 		case BASIC_IF:
 			check_basic_bool_expression();
 
-			token next_token; //TODO neexistuje
+			token_t next_token; //TODO neexistuje
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			arrayInsert(main_list, next_token);
@@ -345,28 +355,28 @@ int check_if_statement(int mode) {
 						global_dynamic_array_position+=1;
 						another_token = get_next_token(incoming_list, global_dynamic_array_position);
 						if(another_token.type != t_EOL) {
-							printf("Expecting EOL after then");
+							exit(2); //Ocekava se EOL po then
 						}
 						else {
 							return EXPECTING_ELSE_OR_END;
 						}
 					}
 					else {
-						printf ("Unexpected keyword. Expected 'then'\n");
+						exit(2); // Necekany keyword. Expected 'then'
 					}
 				case t_EOL:
-					printf("Unexpected EOL, missing 'then'\n");
+					exit(2); // Necekany EOL, chybi 'then'
 				default:	
-					printf("Unexpected token at if statement!\n");
+					exit(2); //Necekany token_t u if statement!
 					break;
 			}
 
 		case EXPECTING_ELSE_OR_END:
-			// token next_token;
+			// token_t next_token;
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			if (next_token.type != t_EOL) {
-				printf ("EOL expecting after else! \n");
+				exit(2); // Ocekava se EOL po else! 
 			}
 			return EXPECTING_END;	
 			break;
@@ -375,7 +385,7 @@ int check_if_statement(int mode) {
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			if (next_token.type != t_EOL) {
-				printf ("EOL expecting after end! \n");
+				exit(2); // Ocekava se EOL po endu! 
 			}
 			return 0;	
 			break;
@@ -389,13 +399,13 @@ int check_if_statement(int mode) {
 /*
 	Funkce zkontroluje syntaxe prikazu while.
 */
-void check_while_statement(int mode) {
+int check_while_statement(int mode) {
 
 	switch (mode) {
 		case BASIC_WHILE:
 			check_basic_bool_expression();
 			int k =0;	
-			token next_token;
+			token_t next_token;
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			arrayInsert(main_list, next_token);
@@ -404,23 +414,23 @@ void check_while_statement(int mode) {
 				case keyword:
 				k = process_keyword(next_token);
 					if (k == DO_KEYWORD) {
-						token another_token;
+						token_t another_token;
 						global_dynamic_array_position+=1;
 						another_token = get_next_token(incoming_list, global_dynamic_array_position);
 						if(another_token.type != t_EOL) {
-							printf("Expecting EOL after do");
+							exit(2);
 						}
 						else {
 							return EXPECTING_END;
 						}
 					}
 					else {
-						printf ("Unexpected keyword. Expected 'end'\n");
+						exit(2);
 					}
 				case t_EOL:
-					return EXPECTING_END;;
+					return EXPECTING_END;
 				default:	
-					printf("Unexpected token at while statement!\n");
+					exit(2); // Necekany token po whilu
 					break;
 			}
 		break;
@@ -428,7 +438,7 @@ void check_while_statement(int mode) {
 			global_dynamic_array_position+=1;
 			next_token = get_next_token(incoming_list, global_dynamic_array_position);
 			if (next_token.type != t_EOL) {
-				printf ("EOL expecting after end! \n");
+				exit (2); //EOL se ocekava po end!
 			}
 			return 0;	
 		default:
@@ -441,7 +451,7 @@ void check_while_statement(int mode) {
 */
 
 void process_custom_or_built_in_function(int expected_parameters_count) {
-	token next_token;
+	token_t next_token;
 	global_dynamic_array_position+=1;
 	next_token = get_next_token(incoming_list, global_dynamic_array_position);
 	arrayInsert(main_list, next_token);
@@ -451,22 +461,22 @@ void process_custom_or_built_in_function(int expected_parameters_count) {
 			process_custom_or_built_in_function(expected_parameters_count--);
 		}
 		else {
-			printf("Unexpected token type at function parameters");
+			exit(2); // Necekany token po parametrech funkce
 		}
 	}
 	else if(next_token.type == right_bracket) {
 		if (expected_parameters_count <= 0) { // Protoze funkce muze byt volana s vetsim mnozstvim parametru
-			token another_token;
+			token_t another_token;
 			global_dynamic_array_position+=1;
 			another_token = get_next_token(incoming_list, global_dynamic_array_position);
 			arrayInsert(main_list, another_token);
 			if(another_token.type != t_EOL) {
-				printf("Unexpected token after right bracket!");
+				exit(2); // Necekany token
 			}
 			return;
 		} 
 		else {
-			printf("Spatny pocet parametru u volani funkce!"); // Chyba 5
+			exit(5); // Spatny pocet parametru u volani funkce!
 		}
 	}
 	
@@ -476,7 +486,7 @@ void process_custom_or_built_in_function(int expected_parameters_count) {
 */
 void process_left_bracket() {
 	
-	token next_token;
+	token_t next_token;
 	global_dynamic_array_position+=1;
 	next_token = get_next_token(incoming_list, global_dynamic_array_position);
 	arrayInsert(main_list, next_token);
@@ -486,44 +496,44 @@ void process_left_bracket() {
 		case add:
 		case sub:
 		case mul:
-		case ddiv:
+		case t_div:
 			process_left_bracket(NO_BRACKET);
 		default:
-			printf("Wierd left bracket error! \n");
+			exit(2); // Wierd left bracket error!
 	}
 
 	check_aritmetic_expression(EXPECTING_RIGHT_BRACKET); // jinak pokrachujeme v hledani prave zavorky
 }
 
-int process_keyword(token t) {
-	if(strcmp(t.value, "if") == 0) {
+int process_keyword(token_t t) {
+	if(strcmp(t.value->str, "if") == 0) {
 		return IF_KEYWORD;
 	}
-	else if(strcmp(t.value, "while") == 0) {
+	else if(strcmp(t.value->str, "while") == 0) {
 		return WHILE_KEYWORD;
 	}
-	else if(strcmp(t.value, "end") == 0) {
+	else if(strcmp(t.value->str, "end") == 0) {
 		return END_KEYWORD;
 	}
-	else if(strcmp(t.value, "function") == 0) {
+	else if(strcmp(t.value->str, "function") == 0) {
 		return FUNCTION_KEYWORD;
 	}
-	else if(strcmp(t.value, "global") == 0) {
+	else if(strcmp(t.value->str, "global") == 0) {
 		return GLOBAL_KEYWORD;
 	}
-	else if(strcmp(t.value, "local") == 0) {
+	else if(strcmp(t.value->str, "local") == 0) {
 		return LOCAL_KEYWORD;
 	}
-	else if(strcmp(t.value, "require") == 0) {
+	else if(strcmp(t.value->str, "require") == 0) {
 		return REQUIRE_KEYWORD;
 	}
-	else if(strcmp(t.value, "return") == 0) {
+	else if(strcmp(t.value->str, "return") == 0) {
 		return RETURN_KEYWORD;
 	}
-	else if(strcmp(t.value, "then") == 0) {
+	else if(strcmp(t.value->str, "then") == 0) {
 		return THEN_KEYWORD;
 	}
-	else if(strcmp(t.value, "do") == 0) {
+	else if(strcmp(t.value->str, "do") == 0) {
 		return DO_KEYWORD;
 	}
 
@@ -535,9 +545,20 @@ int process_keyword(token t) {
 */
 
 void check_assign(int operands_count) {
-	token t, u;
-	
-	list *local_list;
+	token_t t, u, current_token;
+	global_dynamic_array_position--;
+	current_token = get_next_token(main_list, global_dynamic_array_position);
+
+	int *prmtr = malloc(sizeof(int));
+	if(!prmtr) {
+		exit(99);
+	}
+	*prmtr = 1;
+	if(symtable_search(table, current_token.value, prmtr) == false) {
+		exit(3);
+	}
+	global_dynamic_array_position++;
+		
 	int cnt_operands = 0;
 		while (operands_count != 0) {
 			global_dynamic_array_position+=1;
@@ -550,14 +571,14 @@ void check_assign(int operands_count) {
 				case left_bracket:
 					process_left_bracket();
 				case keyword:
-					if(strcmp(t.value, "function") == 0) {
-						process_function_call();
+					if(strcmp(t.value->str, "function") == 0) {
+						built_in_function_call_check(0);
 					}
-					else if(strcmp(t.value, "nil") == 0){
+					else if(strcmp(t.value->str, "nil") == 0){
 						check_assign(operands_count--);
 					}
 					else {
-						printf("Chyba u assign keyword!\n");
+						exit(2); //Chyba u assign keyword!
 					}
 				case integer:
 				case ddouble:
@@ -566,7 +587,7 @@ void check_assign(int operands_count) {
 					break;
 				case add:
 				case sub:
-				case ddiv:
+				case t_div:
 				case mul:
 					check_aritmetic_expression(NO_BRACKET);
 					break;
@@ -581,10 +602,10 @@ void check_assign(int operands_count) {
 				// 	built_in_function_call_check();
 				case t_EOL:
 					if (operands_count != 0) {
-						printf("Wrong count of operators at assign!");
+						exit(5); //Spatny pocet operatoru u assign!
 					}
 				default:
-					printf("assign_printf!\n");
+					exit(2); //assign_printf!
 		}
 	}
 
@@ -597,7 +618,7 @@ void check_assign(int operands_count) {
 void check_aritmetic_expression(int option) {
 	
 	if(option == NO_BRACKET) {
-		token next_token;
+		token_t next_token;
 		global_dynamic_array_position+=1;
 		next_token = get_next_token(incoming_list, global_dynamic_array_position);
 		arrayInsert(main_list, next_token);
@@ -607,10 +628,10 @@ void check_aritmetic_expression(int option) {
 			case ddouble:
 			case string:
 			case keyword:
-				if(next_token.type == keyword && strcmp(next_token.value, "nil") != 0) {
-					printf("Spatny keyword\n");
+				if(next_token.type == keyword && strcmp(next_token.value->str, "nil") != 0) {
+					exit(2); // Spatny keyword
 				}
-				token another_token;
+				token_t another_token;
 				global_dynamic_array_position+=1;
 				another_token = get_next_token(incoming_list, global_dynamic_array_position);
 				arrayInsert(main_list, another_token);
@@ -620,21 +641,21 @@ void check_aritmetic_expression(int option) {
 					case add:
 					case sub:
 					case mul:
-					case ddiv:
+					case t_div:
 						check_aritmetic_expression(NO_BRACKET);
 					default:
-						printf("assign syntax error! \n");
+						exit(2); // assign syntax error! 
 				}
 				return;
 		}
 	}
 	else if(option == EXPECTING_RIGHT_BRACKET) {
-		token next_token;
+		token_t next_token;
 		global_dynamic_array_position+=1;
 		next_token = get_next_token(incoming_list, global_dynamic_array_position);
 		arrayInsert(main_list, next_token);
 
-		token another_token;
+		token_t another_token;
 		switch(next_token.type) {
 			case right_bracket:
 				break;
@@ -644,26 +665,26 @@ void check_aritmetic_expression(int option) {
 				arrayInsert(main_list, another_token);
 				switch(another_token.type) {
 					case t_EOL:
-						printf("Expecting right bracket syntax error! \n");
+						exit(2); //Ocekava se right bracket syntax error!
 					case add:
 					case sub:
 					case mul:
-					case ddiv:
+					case t_div:
 						check_aritmetic_expression(EXPECTING_RIGHT_BRACKET);
 					default:
-						printf("Aritmetic expression at expecting right bracket 1!");
+						exit(2); //Aritmetic expression u se ocekava right bracket !
 				}
 				break;
 			case add:
 			case sub:
 			case mul:
-			case ddiv:
+			case t_div:
 			case left_bracket:
 				global_dynamic_array_position+=1;
 				another_token = get_next_token(incoming_list, global_dynamic_array_position);
 				arrayInsert(main_list, another_token);
 				if(another_token.type != id) {
-					printf("double operator syntax error!\n");
+					exit(2); //double operator syntax error!
 				}
 				check_aritmetic_expression(EXPECTING_RIGHT_BRACKET);
 
@@ -672,23 +693,23 @@ void check_aritmetic_expression(int option) {
 	}
 }
 
-int check_operator(token t) {
-	if(strcmp(t.value, "==") == 0) {
+int check_operator(token_t t) {
+	if(strcmp(t.value->str, "==") == 0) {
 		return DOUBLE_EQUAL;
 	}
-	else if (strcmp(t.value, ">") == 0) {
+	else if (strcmp(t.value->str, ">") == 0) {
 		return GREATER;
 	}
-	else if (strcmp(t.value, ">=") == 0) {
+	else if (strcmp(t.value->str, ">=") == 0) {
 		return GREATER_OR_EQUAL;
 	}
-	else if (strcmp(t.value, "<") == 0) {
+	else if (strcmp(t.value->str, "<") == 0) {
 		return LESS;
 	}
-	else if (strcmp(t.value, "<=") == 0) {
+	else if (strcmp(t.value->str, "<=") == 0) {
 		return LESS_OR_EQUAL;
 	}
-	else if (strcmp(t.value, "!") == 0) {
+	else if (strcmp(t.value->str, "!") == 0) {
 		return NOT;
 	}
 	else {
@@ -696,18 +717,18 @@ int check_operator(token t) {
 	}
 }
 
-void check_function_declaration(dynStr name) {
-	token next_token;
+void check_function_declaration(char* name) {
+	token_t next_token;
 	global_dynamic_array_position+=1;
 	next_token = get_next_token(incoming_list, global_dynamic_array_position);
-	symtable_value_t prmtr = my_malloc(sizeof(int));
+	symtable_value_t *prmtr = malloc(sizeof(int));
 	*prmtr = 0;
 
-	if (symtable_search(table, next_token.value, 1) == true) {
-		printf("SEMANTIC ERROR redefinition of function!");
+	if (symtable_search(table, next_token.value, *prmtr) == true) {
+		exit(3); //redefinice funkce!
 	}
 	if(next_token.type == left_bracket) {
-		token another_token;
+		token_t another_token;
 		global_dynamic_array_position+=1;
 		another_token = get_next_token(incoming_list, global_dynamic_array_position);
 		while (another_token.type != right_bracket) {
@@ -715,9 +736,9 @@ void check_function_declaration(dynStr name) {
 			another_token = get_next_token(incoming_list, global_dynamic_array_position);
 			*prmtr++;
 		}
-		symtable_insert(table, name.str, prmtr);
+		symtable_insert(&table, name, *prmtr);
 	} else {
-		printf("SYNTAX ERROR");
+		exit(2);
 	}
 }
 
@@ -727,8 +748,9 @@ void check_function_declaration(dynStr name) {
 void parser_start(dynArr *list) {
 
 	incoming_list = list;
+	arrayInit(main_list);
 
-    token t;
+    token_t t;
 	table = symtable_init();
 
 	while ((t.type) != t_EOF) {
@@ -739,7 +761,7 @@ void parser_start(dynArr *list) {
             case t_EOF:
 			    break;
             case id:
-			    check_identifier(*t.value);
+			    check_identifier(t.value->str);
 			    break;
 		    case keyword:
 				if(process_keyword(t) == IF_KEYWORD) {
@@ -748,38 +770,38 @@ void parser_start(dynArr *list) {
 				else if (process_keyword(t) == WHILE_KEYWORD) {
 					check_while_statement(BASIC_WHILE);
 				}
-			    else if (strcmp(t.value, "nil")==0) {
-					token t;
+			    else if (strcmp(t.value->str, "nil")==0) {
+					token_t t;
 					global_dynamic_array_position+=1;
 					 t = get_next_token(incoming_list, global_dynamic_array_position);
 			    	arrayInsert(main_list, t);
-			    	if (t.type == add || t.type == sub || t.type == mul || t.type == ddiv)
+			    	if (t.type == add || t.type == sub || t.type == mul || t.type == t_div)
 				    	check_aritmetic_expression(NO_BRACKET);
 			    	else if (t.type == t_EOL)
 				    	continue;
 			    	else
-				    	printf("unexpected token after item");
+				    	exit(2);
 					}
-				else if(strcmp(t.value, "require") == 0) {
+				else if(strcmp(t.value->str, "require") == 0) {
 					global_dynamic_array_position++;
 					continue;
 				}
 				else if(process_keyword(t) == GLOBAL_KEYWORD || process_keyword(t) == LOCAL_KEYWORD) {
-					token t;
+					token_t t;
 					global_dynamic_array_position+=1;
 					t = get_next_token(incoming_list, global_dynamic_array_position);
 					if (t.type == id) {
-						check_identifier(*t.value);
+						check_identifier(t.value->str);
 					}
 					else {
-						printf("SYNTAX ERROR!");
+						exit(2);
 					}
 				}
 				else if(process_keyword(t) == FUNCTION_KEYWORD) {
 					check_function_def(FUNCTION_START);
 				}
 				else {
-					printf("SYNTAX ERROR!");
+					exit(2);
 				}
 			    break;
 		    case integer:
@@ -788,12 +810,12 @@ void parser_start(dynArr *list) {
 				global_dynamic_array_position+=1;
 			    t = get_next_token(incoming_list, global_dynamic_array_position);
 			    arrayInsert(main_list, t);
-			    if (t.type == add || t.type == sub || t.type == mul || t.type == ddiv)
+			    if (t.type == add || t.type == sub || t.type == mul || t.type == t_div)
 				    check_aritmetic_expression(NO_BRACKET);
 			    else if (t.type == t_EOL)
 				    continue;
 			    else
-				    printf("unexpected token after item");
+					exit(2);
 			    break;
             case left_bracket:
 			    process_left_bracket();
@@ -810,7 +832,7 @@ void parser_start(dynArr *list) {
 			//     built_in_function_call_check(parameters_count);
 			//     break;
 		    default:
-			    printf("Neznamy typ tokenu");
+			    exit(2); // Neznamy typ tokenu
 			break;
 		}
     }

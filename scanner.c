@@ -24,18 +24,9 @@
 #define STATE_EOL 198
 
 
-<<<<<<< HEAD
-
-enum tokenType{keyword, id, string, operator, integer, ddouble, exponent, left_bracket, right_bracket, t_END, t_EOF, t_EOL, equal, add, sub, mul, ddiv, new_line};
-
-int Error = 0;
-//tělo hlavní funkce Scanner
-int scanner(dynArr *array){
-=======
 int Error = 0;
 //tělo hlavní funkce Scanner
 int Scanner(dynArr *array){
->>>>>>> origin/psa
     char vstup = getchar();
     char tmp1;
     char tmp2;
@@ -92,12 +83,6 @@ int Scanner(dynArr *array){
                         return 1;
                 }
     }
-<<<<<<< HEAD
-    token *end_of_array = makeToken(t_END, '\0');
-    int len = strlen(array->array);
-    array->array[len] = *end_of_array;
-=======
->>>>>>> origin/psa
     if (Error>=1)
         return 1;
     return 0;
@@ -340,7 +325,7 @@ char Operator2(char x, char y, dynArr *a){
 }
 
 token_t* makeToken(int type, dynStr *value){
-    token_t*send = malloc(sizeof (token));
+    token_t*send = malloc(sizeof (token_t));
     if(!send){
         printf("Error\n");
         return NULL;
@@ -350,7 +335,7 @@ token_t* makeToken(int type, dynStr *value){
     printToken(*send);
     return send;
 }
-void printToken(token_ttok){
+void printToken(token_t tok){
     printf("token value = %s\n", tok.value->str);
 }
 void newLineToken(dynArr *a){

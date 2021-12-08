@@ -1,19 +1,32 @@
 #include "./scanner.h"
 #include "symtable.h"
-#include "./list.h"
 
-token get_next_token();
+token_t get_next_token();
 
-void check_id (token tok);
+void check_identifier(char* name );
 
-void check_number();
+void process_nested_commands(int option);
 
-void check_assign();
+void check_function_def(int option);
 
-void check_arithmetic(unsigned int type);
+void check_basic_bool_expression();
 
-void while_came();
+int check_if_statement(int mode);
 
-void if_came();
+int check_while_statement(int mode);
 
-void inside_commands(unsigned int type);
+void process_custom_or_built_in_function(int expected_parameters_count);
+
+void process_left_bracket();
+
+int process_keyword(token_t t);
+
+void check_assign(int operands_count);
+
+void check_aritmetic_expression(int option);
+
+int check_operator(token_t t);
+
+void check_function_declaration(char* name);
+
+void parser_start(dynArr *list);

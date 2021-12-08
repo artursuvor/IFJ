@@ -12,7 +12,7 @@
 
 #include "scanner.h"
 #include "symtable.h"
-#include "list.h"
+// #include "list.h"
 #include "syntax.h"
 #include "basicStackFunctions.h"
 
